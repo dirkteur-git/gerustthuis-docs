@@ -2,7 +2,7 @@
 
 Actuele database structuur in Supabase (gerustthuis-supabase).
 
-**Laatst bijgewerkt:** 2026-01-31
+**Laatst bijgewerkt:** 2026-02-10
 
 ---
 
@@ -595,7 +595,6 @@ Centrale SQL functie die bepaalt welke hue_config IDs een user mag zien:
 ```sql
 -- Stap 1: Check households via household_members
 -- Stap 2: Fallback op directe hue_config.user_email match
--- Stap 3: Superadmin (dirk@boostix.nl) ziet alles
 ```
 
 Alle RLS policies gebruiken: `config_id IN (SELECT get_accessible_config_ids())`
@@ -623,6 +622,7 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 15. `015_link_config_to_household.sql` - Auto-link hue_config aan household
 16. `016_fix_missing_tables.sql` - Herstel room_activity_hourly + RLS
 17. `017_populate_aggregated_data.sql` - Vul aggregatie tabellen + fix RLS
+18. `018_remove_superadmin.sql` - Verwijder superadmin (dirk@boostix.nl) uit functies, policies, triggers
 
 ---
 

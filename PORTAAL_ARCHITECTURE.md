@@ -432,12 +432,12 @@ Alle views zijn geïmplementeerd:
 | `Patronen.vue` | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
 | `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur |
 | `Woning.vue` | Kamers overzicht, devices per kamer, activiteit per kamer |
-| `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers (superadmin) |
+| `Instellingen.vue` | Hue koppeling, huishouden beheer |
 | `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
 
 ### Multi-tenant (geïmplementeerd)
 
-Household-based multi-tenancy via `get_accessible_config_ids()`. Elke user ziet alleen data van eigen huishouden. Superadmin (dirk@boostix.nl) kan alle huishoudens bekijken.
+Household-based multi-tenancy via `get_accessible_config_ids()`. Elke user ziet alleen data van eigen huishouden.
 
 ---
 

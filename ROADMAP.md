@@ -26,12 +26,6 @@ Feature status en geplande verbeteringen.
 - Automatische household aanmaak bij signup
 - Uitnodigingssysteem (AcceptInvitation.vue)
 
-### Superadmin ✓
-**Migratie:** 014
-- dirk@boostix.nl als global admin
-- Gebruikers tab in Instellingen (alle users/households)
-- Household switcher
-
 ### Data Pipeline ✓
 **Migraties:** 015-017
 - Auto-link hue_config aan household via trigger
@@ -87,8 +81,8 @@ Dashboard laadt data één keer bij mount. Toevoegen:
 ### v0.3.0 (Huidig - feb 2026)
 - Patronen pagina live (dagritme, trends, vergelijking)
 - Household-based multi-tenancy
-- Superadmin functionaliteit
 - Data pipeline fixes (migraties 015-017)
+- Superadmin verwijderd (migratie 018)
 
 ### v0.2.0 (jan 2026)
 - Analyse pagina (Z-score anomaly detection)
