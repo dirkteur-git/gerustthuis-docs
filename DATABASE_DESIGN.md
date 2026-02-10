@@ -593,8 +593,27 @@ LIMIT 100;
 Centrale SQL functie die bepaalt welke hue_config IDs een user mag zien:
 
 ```sql
--- Stap 1: Check households via household_members
--- Stap 2: Fallback op directe hue_config.user_email match
+CREATE OR REPLACE FUNCTION get_accessible_config_ids()
+RETURNS SETOF UUID AS $$
+BEGIN
+    -- Stap 1: Via household_members → households.config_id
+    RETURN QUERY
+    SELECT DISTINCT h.config_id
+    FROM household_members hm
+    JOIN households h ON hm.household_id = h.id
+    WHERE hm.user_id = auth.uid() AND h.config_id IS NOT NULL;
+
+    -- Stap 2: Fallback op directe hue_config.user_email match
+    RETURN QUERY
+    SELECT id FROM hue_config
+    WHERE user_email = auth.jwt() ->> 'email'
+      AND id NOT IN (
+          SELECT h2.config_id FROM household_members hm2
+          JOIN households h2 ON hm2.household_id = h2.id
+          WHERE hm2.user_id = auth.uid() AND h2.config_id IS NOT NULL
+      );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 ```
 
 Alle RLS policies gebruiken: `config_id IN (SELECT get_accessible_config_ids())`
@@ -605,24 +624,24 @@ Alle RLS policies gebruiken: `config_id IN (SELECT get_accessible_config_ids())`
 
 SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 
-1. `001_initial_schema.sql` - Basis tabellen (hue_config, hue_devices, activity_events, room_activity)
-2. `002_cron_jobs.sql` - Cron jobs voor polling
-3. `003_room_activity_aggregation.sql` - Room activity aggregatie functies
-4. `004_room_activity_hourly_table.sql` - room_activity_hourly tabel + aggregate functie
-5. `005_rls_policies.sql` - Row Level Security policies
-6. `006_daily_activity_stats.sql` - daily_activity_stats tabel + berekeningsfuncties
-7. `007_sensor_health.sql` - Sensor health monitoring
-8. `008_physical_devices.sql` - Physical devices groepering
-9. `009_user_profiles.sql` - User profiles tabel
-10. `010_households.sql` - Households multi-tenancy
-11. `011_households_v2.sql` - Households verbeteringen
-12. `012_clean_rebuild_auth_households.sql` - Auth en households rebuild
-13. `013_fix_signup_trigger.sql` - Fix signup trigger
-14. `014_superadmin_user_profiles.sql` - Superadmin RLS op user_profiles
-15. `015_link_config_to_household.sql` - Auto-link hue_config aan household
-16. `016_fix_missing_tables.sql` - Herstel room_activity_hourly + RLS
-17. `017_populate_aggregated_data.sql` - Vul aggregatie tabellen + fix RLS
-18. `018_remove_superadmin.sql` - Verwijder superadmin (dirk@boostix.nl) uit functies, policies, triggers
+**Opmerking:** Migraties 001-003 zijn direct via de Supabase SQL editor uitgevoerd en niet als bestanden bewaard. Bestanden beginnen bij 004.
+
+1. `004_room_activity_hourly_table.sql` - room_activity_hourly tabel + aggregate functie
+2. `005_rls_policies.sql` - Row Level Security policies
+3. `006_daily_activity_stats.sql` - daily_activity_stats tabel + berekeningsfuncties
+4. `007_fix_rls_complete.sql` - Fix RLS policies
+5. `008_sensor_health.sql` - Sensor health monitoring
+6. `009_user_profiles.sql` - User profiles tabel
+7. `010_households.sql` - Households multi-tenancy
+8. `011_households_v2.sql` - Households verbeteringen
+9. `012_clean_rebuild_auth_households.sql` - Auth en households rebuild
+10. `013_fix_signup_trigger.sql` - Fix signup trigger
+11. `014_superadmin_user_profiles.sql` - Superadmin RLS op user_profiles (later verwijderd)
+12. `015_link_config_to_household.sql` - Auto-link hue_config aan household
+13. `016_fix_missing_tables.sql` - Herstel room_activity_hourly + RLS
+14. `017_populate_aggregated_data.sql` - Vul aggregatie tabellen + fix RLS
+15. `018_remove_superadmin.sql` - Verwijder superadmin logica uit functies, policies, triggers
+16. `019_aggregation_cron_jobs.sql` - pg_cron jobs voor uurlijkse aggregatie (room_activity_hourly + daily_activity_stats)
 
 ---
 
