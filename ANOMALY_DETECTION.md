@@ -133,9 +133,70 @@ const getNormalDistributionPath = (mean, std, min, max) => {
 
 ## Database Tabellen
 
-### `dag_vectors`
+### `daily_activity_stats` (primaire bron)
 
-Opslag van dagelijkse vectoren:
+De belangrijkste tabel voor anomaly detection. Bevat alle benodigde data per dag:
+
+```sql
+CREATE TABLE daily_activity_stats (
+    id                    UUID PRIMARY KEY,
+    config_id             UUID REFERENCES hue_config(id),
+    date                  DATE NOT NULL,
+    first_activity        TIME,              -- Eerste activiteit
+    last_activity         TIME,              -- Laatste activiteit
+    total_events          INTEGER,           -- Totaal events
+    events_per_hour       INTEGER[24],       -- Events per uur (index 0 = 00:00-01:00)
+    active_hours          INTEGER,           -- Uren met ≥1 event
+    rooms_active          INTEGER,           -- Unieke kamers met activiteit
+    rooms_available       INTEGER,           -- Totaal beschikbare kamers
+    longest_gap_minutes   INTEGER,           -- Langste periode zonder events
+    night_events          INTEGER,           -- Events 23:00-06:00
+    night_active_hours    INTEGER,           -- Actieve uren 23:00-06:00
+    UNIQUE(config_id, date)
+);
+```
+
+**Anomaly-relevante velden:**
+| Veld | Anomaly Use Case |
+|------|------------------|
+| `first_activity` | "Laat opgestaan" detectie |
+| `last_activity` | "Vroeg naar bed" detectie |
+| `events_per_hour` | Uur-voor-uur patroonanalyse |
+| `longest_gap_minutes` | Inactiviteitsalarm (bijv. > 3 uur) |
+| `night_events` | Nachtelijke onrust detectie |
+| `rooms_active` | "Niet alle kamers bezocht" detectie |
+
+### Vector Berekening uit `daily_activity_stats`
+
+De 15-dimensionale dag-vector kan direct uit `daily_activity_stats` berekend worden:
+
+```javascript
+const buildDayVector = (stats) => {
+  const h = stats.events_per_hour  // INTEGER[24]
+
+  return [
+    timeToDecimal(stats.first_activity),   // 0: eerste_activiteit
+    timeToDecimal(stats.last_activity),    // 1: laatste_activiteit
+    sum(h.slice(5, 10)),                   // 2: events_ochtend (05:00-10:00)
+    sum(h.slice(10, 17)),                  // 3: events_middag (10:00-17:00)
+    sum(h.slice(17, 22)),                  // 4: events_avond (17:00-22:00)
+    sum(h.slice(22, 24)) + sum(h.slice(0, 5)), // 5: events_nacht
+    null,                                  // 6: motion_events (apart query)
+    null,                                  // 7: light_events (apart query)
+    null,                                  // 8: door_events (apart query)
+    null,                                  // 9-12: per kamer (apart query)
+    null,
+    null,
+    null,
+    stats.rooms_active,                    // 13: actieve_kamers
+    stats.active_hours * 60 / 12,          // 14: minuten_actief (geschat)
+  ]
+}
+```
+
+### `dag_vectors` (optioneel, voor caching)
+
+Pre-computed vectoren voor snellere queries:
 
 ```sql
 CREATE TABLE dag_vectors (
@@ -222,7 +283,76 @@ De huidige **z-score benadering** is:
 
 | Component | Locatie | Beschrijving |
 |-----------|---------|--------------|
-| UI | `gerustthuis-cloud/src/views/consumer/Patronen.vue` | Dashboard met anomaly visualisatie |
-| API | Supabase RPC `check_nu` | Real-time anomaly check |
-| Data | `dag_vectors` tabel | Historische dagvectoren |
-| View | `room_activity_hourly` | Input voor vector berekening |
+| Data | `daily_activity_stats` tabel | Primaire bron voor anomaly detection |
+| Data | `activity_events` tabel | Ruwe events voor device-type analyse |
+| Functie | `calculate_daily_activity_stats()` | Berekent dagelijkse stats |
+| View | `room_activity_hourly` | Uurlijkse aggregatie per kamer |
+
+---
+
+## Anomaly Queries
+
+### Inactiviteitsalarm (> 3 uur gap)
+
+```sql
+SELECT date, longest_gap_minutes
+FROM daily_activity_stats
+WHERE config_id = 'xxx'
+  AND longest_gap_minutes > 180
+ORDER BY date DESC;
+```
+
+### Afwijkende opstaan/slapen tijden
+
+```sql
+WITH stats AS (
+  SELECT
+    AVG(EXTRACT(HOUR FROM first_activity) + EXTRACT(MINUTE FROM first_activity)/60) as avg_wake,
+    STDDEV(EXTRACT(HOUR FROM first_activity) + EXTRACT(MINUTE FROM first_activity)/60) as std_wake
+  FROM daily_activity_stats
+  WHERE config_id = 'xxx'
+    AND date > CURRENT_DATE - 30
+)
+SELECT
+  das.date,
+  das.first_activity,
+  (EXTRACT(HOUR FROM das.first_activity) + EXTRACT(MINUTE FROM das.first_activity)/60 - stats.avg_wake) / NULLIF(stats.std_wake, 0) as z_score
+FROM daily_activity_stats das, stats
+WHERE das.config_id = 'xxx'
+  AND das.date = CURRENT_DATE;
+```
+
+### Nachtelijke onrust detectie
+
+```sql
+SELECT date, night_events, night_active_hours
+FROM daily_activity_stats
+WHERE config_id = 'xxx'
+  AND night_events > (
+    SELECT AVG(night_events) + 2 * STDDEV(night_events)
+    FROM daily_activity_stats
+    WHERE config_id = 'xxx'
+      AND date > CURRENT_DATE - 30
+  )
+ORDER BY date DESC;
+```
+
+### Dashboard Status Query
+
+```sql
+SELECT
+  date,
+  total_events,
+  active_hours,
+  longest_gap_minutes,
+  CASE
+    WHEN longest_gap_minutes > 180 THEN 'alert'
+    WHEN total_events < 10 THEN 'warning'
+    WHEN active_hours < 8 THEN 'warning'
+    ELSE 'ok'
+  END as status
+FROM daily_activity_stats
+WHERE config_id = 'xxx'
+ORDER BY date DESC
+LIMIT 7;
+```

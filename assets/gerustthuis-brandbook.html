@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GerustThuis Brandbook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --gt-green: #10b981;
+      --gt-anthracite: #111827;
+      --gt-warm-gray: #6b7280;
+      --gt-light-gray: #f3f4f6;
+      --gt-white: #ffffff;
+      --gt-border: #e5e7eb;
+      --gt-status-ok: #10b981;
+      --gt-status-warning: #f59e0b;
+      --gt-status-alert: #ef4444;
+      --gt-status-inactive: #9ca3af;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gt-light-gray);
+      color: var(--gt-anthracite);
+      line-height: 1.5;
+    }
+    
+    .header {
+      background: var(--gt-green);
+      color: white;
+      padding: 64px 24px;
+      text-align: center;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .header-logo svg { width: 64px; height: 64px; }
+    .header-title { font-size: 32px; font-weight: 700; }
+    .header-subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 8px; }
+    .header-version { font-size: 12px; opacity: 0.7; }
+    
+    .nav {
+      background: var(--gt-white);
+      border-bottom: 1px solid var(--gt-border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .nav-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .nav a {
+      color: var(--gt-warm-gray);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .nav a:hover { color: var(--gt-green); }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+    
+    .section {
+      background: var(--gt-white);
+      border: 1px solid var(--gt-border);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gt-border);
+    }
+    
+    .section-number {
+      background: var(--gt-green);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .section-title { font-size: 20px; font-weight: 600; }
+    
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 24px 0 16px 0;
+    }
+    
+    p {
+      color: var(--gt-warm-gray);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    
+    .logo-card {
+      border: 1px solid var(--gt-border);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .logo-card.dark { background: var(--gt-anthracite); }
+    .logo-card svg { max-width: 100%; height: auto; }
+    
+    .logo-card .label {
+      font-size: 11px;
+      color: var(--gt-warm-gray);
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .logo-card.dark .label { color: #9ca3af; }
+    
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    
+    .color-card {
+      border: 1px solid var(--gt-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .color-swatch { height: 72px; }
+    
+    .color-info { padding: 12px; }
+    .color-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+    .color-hex { font-family: monospace; font-size: 12px; color: var(--gt-warm-gray); }
+    .color-use { font-size: 11px; color: var(--gt-status-inactive); margin-top: 8px; }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--gt-border);
+      border-radius: 8px;
+    }
+    
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .status-name { font-size: 13px; font-weight: 500; }
+    .status-hex { font-size: 11px; font-family: monospace; color: var(--gt-warm-gray); }
+    
+    .type-sample {
+      padding: 24px;
+      background: var(--gt-light-gray);
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    
+    .type-h1 { font-size: 24px; font-weight: 600; color: var(--gt-anthracite); margin-bottom: 8px; }
+    .type-h2 { font-size: 18px; font-weight: 600; color: var(--gt-anthracite); margin-bottom: 8px; }
+    .type-h3 { font-size: 16px; font-weight: 600; color: var(--gt-anthracite); margin-bottom: 8px; }
+    .type-body { font-size: 14px; color: var(--gt-warm-gray); margin-bottom: 8px; }
+    .type-small { font-size: 12px; color: var(--gt-status-inactive); }
+    
+    .button-grid {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    
+    .btn-primary { background: var(--gt-green); color: white; border: none; }
+    .btn-secondary { background: white; color: var(--gt-anthracite); border: 1px solid var(--gt-border); }
+    .btn-ghost { background: transparent; color: var(--gt-green); border: none; }
+    
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
+    }
+    
+    .example-card {
+      border: 1px solid var(--gt-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .example-header {
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .example-header.do { background: #ecfdf5; color: var(--gt-green); }
+    .example-header.dont { background: #fef2f2; color: var(--gt-status-alert); }
+    .example-content { padding: 20px; font-size: 14px; color: var(--gt-warm-gray); }
+    
+    .rules-list { list-style: none; margin: 16px 0; }
+    
+    .rules-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gt-border);
+      font-size: 14px;
+      color: var(--gt-warm-gray);
+    }
+    
+    .rules-list li:last-child { border-bottom: none; }
+    
+    .rule-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    .rule-icon.do { background: #ecfdf5; color: var(--gt-green); }
+    .rule-icon.dont { background: #fef2f2; color: var(--gt-status-alert); }
+    
+    .component-example {
+      padding: 24px;
+      background: var(--gt-light-gray);
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+    
+    .notification-card {
+      background: white;
+      border: 1px solid var(--gt-border);
+      border-radius: 8px;
+      padding: 16px;
+      max-width: 360px;
+    }
+    
+    .notification-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .notification-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .notification-status .text { font-size: 12px; font-weight: 500; }
+    .notification-title { font-size: 16px; font-weight: 600; color: var(--gt-anthracite); margin-bottom: 4px; }
+    .notification-body { font-size: 14px; color: var(--gt-warm-gray); }
+    
+    .spacing-grid {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+    
+    .spacing-item { text-align: center; }
+    .spacing-box { background: var(--gt-green); opacity: 0.3; margin-bottom: 8px; }
+    .spacing-label { font-size: 12px; font-weight: 500; color: var(--gt-anthracite); }
+    .spacing-value { font-size: 11px; font-family: monospace; color: var(--gt-warm-gray); }
+    
+    .variant-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 24px 0;
+    }
+    
+    @media (max-width: 700px) {
+      .variant-comparison { grid-template-columns: 1fr; }
+    }
+    
+    .variant-card {
+      border: 1px solid var(--gt-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .variant-header {
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .variant-header.consumer { background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+    .variant-header.pro { background: linear-gradient(135deg, #1f2937, #111827); }
+    
+    .variant-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    
+    .variant-badge.consumer { background: var(--gt-green); color: white; }
+    .variant-badge.pro { background: white; color: var(--gt-anthracite); }
+    
+    .variant-name { font-size: 18px; font-weight: 600; }
+    .variant-header.pro .variant-name { color: white; }
+    
+    .variant-body {
+      padding: 20px;
+      background: white;
+    }
+    
+    .variant-logo {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background: var(--gt-light-gray);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--gt-warm-gray);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <svg viewBox="0 0 64 64" width="64" height="64">
+        <rect width="64" height="64" rx="14" fill="rgba(255,255,255,0.2)"/>
+        <path d="M10 34 L32 14 L54 34" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="32" cy="44" r="4" fill="#ffffff"/>
+        <circle cx="32" cy="44" r="8" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="32" cy="44" r="13" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.25"/>
+      </svg>
+      <span class="header-title">GerustThuis</span>
+    </div>
+    <p class="header-subtitle">Brandbook & Style Guide</p>
+    <p class="header-version">Versie 1.0 — Februari 2026</p>
+  </header>
+  
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#essence">Merkessentie</a>
+      <a href="#logo">Logo</a>
+      <a href="#variants">Varianten</a>
+      <a href="#colors">Kleuren</a>
+      <a href="#typography">Typografie</a>
+      <a href="#components">Componenten</a>
+      <a href="#communication">Communicatie</a>
+      <a href="#donts">Don'ts</a>
+    </div>
+  </nav>
+  
+  <main class="container">
+    
+    <!-- 1. Merkessentie -->
+    <section id="essence" class="section">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2 class="section-title">Merkessentie</h2>
+      </div>
+      
+      <h3>Missie</h3>
+      <p style="font-size: 18px; color: var(--gt-anthracite);">Mantelzorgers gemoedsrust geven door slimme, onopvallende monitoring van hun dierbaren.</p>
+      
+      <h3>Logo Concept: Shelter + Signal</h3>
+      <p>Het logo combineert een beschermend dak (shelter) met signaalringen rond een persoon. Dit symboliseert:</p>
+      <ul class="rules-list">
+        <li><span class="rule-icon do">✓</span> <strong>Het dak:</strong> Bescherming, veiligheid, thuis</li>
+        <li><span class="rule-icon do">✓</span> <strong>De persoon:</strong> De oudere die thuis woont</li>
+        <li><span class="rule-icon do">✓</span> <strong>De ringen:</strong> "We kijken mee" — zachte, niet-invasieve monitoring</li>
+      </ul>
+      
+      <h3>Kernwaarden</h3>
+      <div class="status-grid">
+        <div class="status-card">
+          <div class="status-dot" style="background: var(--gt-green);"></div>
+          <div>
+            <div class="status-name">Geruststelling</div>
+            <div class="status-hex">Niet alarmeren, maar kalmeren</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: var(--gt-green);"></div>
+          <div>
+            <div class="status-name">Eenvoud</div>
+            <div class="status-hex">Complexe data, simpele communicatie</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: var(--gt-green);"></div>
+          <div>
+            <div class="status-name">Respect</div>
+            <div class="status-hex">Voor privacy en autonomie</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: var(--gt-green);"></div>
+          <div>
+            <div class="status-name">Betrouwbaar</div>
+            <div class="status-hex">Altijd beschikbaar, nooit overdreven</div>
+          </div>
+        </div>
+      </div>
+      
+      <h3>Tone of Voice</h3>
+      <ul class="rules-list">
+        <li><span class="rule-icon do">✓</span> Warm maar niet kinderachtig</li>
+        <li><span class="rule-icon do">✓</span> Informatief maar niet technisch</li>
+        <li><span class="rule-icon do">✓</span> Kalm maar niet afstandelijk</li>
+        <li><span class="rule-icon do">✓</span> Eerlijk maar niet alarmerend</li>
+      </ul>
+    </section>
+    
+    <!-- 2. Logo -->
+    <section id="logo" class="section">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2 class="section-title">Logo</h2>
+      </div>
+      
+      <h3>Primair icoon</h3>
+      <div class="logo-grid">
+        <div class="logo-card">
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <rect width="64" height="64" rx="14" fill="#10b981"/>
+            <path d="M10 34 L32 14 L54 34" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="44" r="4" fill="#ffffff"/>
+            <circle cx="32" cy="44" r="8" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="44" r="13" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.25"/>
+          </svg>
+          <div class="label">Primary</div>
+        </div>
+        
+        <div class="logo-card dark">
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <rect width="64" height="64" rx="14" fill="#10b981"/>
+            <path d="M10 34 L32 14 L54 34" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="44" r="4" fill="#ffffff"/>
+            <circle cx="32" cy="44" r="8" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="44" r="13" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.25"/>
+          </svg>
+          <div class="label">Dark background</div>
+        </div>
+        
+        <div class="logo-card">
+          <svg viewBox="0 0 64 64" width="48" height="48">
+            <path d="M10 34 L32 14 L54 34" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="44" r="4" fill="#10b981"/>
+            <circle cx="32" cy="44" r="8" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="44" r="13" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.25"/>
+          </svg>
+          <div class="label">No background</div>
+        </div>
+        
+        <div class="logo-card">
+          <svg viewBox="0 0 64 64" width="48" height="48">
+            <path d="M10 34 L32 14 L54 34" fill="none" stroke="#111827" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="44" r="4" fill="#111827"/>
+            <circle cx="32" cy="44" r="8" fill="none" stroke="#111827" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="44" r="13" fill="none" stroke="#111827" stroke-width="1.5" opacity="0.25"/>
+          </svg>
+          <div class="label">Monochrome</div>
+        </div>
+      </div>
+      
+      <h3>Wordmark</h3>
+      <div class="logo-grid">
+        <div class="logo-card" style="grid-column: span 2;">
+          <div style="display: flex; align-items: center; gap: 16px; justify-content: center;">
+            <svg viewBox="0 0 64 64" width="48" height="48">
+              <rect width="64" height="64" rx="14" fill="#10b981"/>
+              <path d="M10 34 L32 14 L54 34" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="32" cy="44" r="4" fill="#ffffff"/>
+              <circle cx="32" cy="44" r="8" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+              <circle cx="32" cy="44" r="13" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.25"/>
+            </svg>
+            <span style="font-size: 28px; font-weight: 600;"><span style="color: #10b981;">Gerust</span><span style="color: #111827;">Thuis</span></span>
+          </div>
+          <div class="label">Horizontal wordmark</div>
+        </div>
+        
+        <div class="logo-card dark" style="grid-column: span 2;">
+          <div style="display: flex; align-items: center; gap: 16px; justify-content: center;">
+            <svg viewBox="0 0 64 64" width="48" height="48">
+              <rect width="64" height="64" rx="14" fill="#10b981"/>
+              <path d="M10 34 L32 14 L54 34" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="32" cy="44" r="4" fill="#ffffff"/>
+              <circle cx="32" cy="44" r="8" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+              <circle cx="32" cy="44" r="13" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.25"/>
+            </svg>
+            <span style="font-size: 28px; font-weight: 600;"><span style="color: #10b981;">Gerust</span><span style="color: #ffffff;">Thuis</span></span>
+          </div>
+          <div class="label">Dark background</div>
+        </div>
+      </div>
+      
+      <h3>Gebruiksregels</h3>
+      <ul class="rules-list">
+        <li><span class="rule-icon do">✓</span> Minimale breedte icon: 32px</li>
+        <li><span class="rule-icon do">✓</span> Witruimte rondom: minimaal hoogte van het icoon</li>
+        <li><span class="rule-icon dont">✗</span> Nooit vervormen, roteren of effecten toevoegen</li>
+        <li><span class="rule-icon dont">✗</span> Nooit andere kleuren gebruiken dan gespecificeerd</li>
+      </ul>
+    </section>
+    
+    <!-- 3. Brand Variants -->
+    <section id="variants" class="section">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2 class="section-title">Brand Varianten</h2>
+      </div>
+      
+      <p>GerustThuis heeft twee varianten: Consumer (voor mantelzorgers) en Pro (voor zakelijke markt).</p>
+      
+      <div class="variant-comparison">
+        <!-- Consumer -->
+        <div class="variant-card">
+          <div class="variant-header consumer">
+            <span class="variant-badge consumer">Consumer</span>
+            <div class="variant-name">GerustThuis</div>
+          </div>
+          <div class="variant-body">
+            <div class="variant-logo">
+              <svg viewBox="0 0 200 48" width="200" height="48">
+                <g>
+                  <rect width="48" height="48" rx="10" fill="#10b981"/>
+                  <path d="M7 26 L24 10 L41 26" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="24" cy="33" r="3" fill="#fff"/>
+                  <circle cx="24" cy="33" r="6" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+                  <circle cx="24" cy="33" r="10" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.25"/>
+                </g>
+                <text x="58" y="32" style="font-family: Inter, system-ui; font-size: 20px; font-weight: 600;">
+                  <tspan fill="#10b981">Gerust</tspan><tspan fill="#111827">Thuis</tspan>
+                </text>
+              </svg>
+            </div>
+            <ul class="rules-list" style="margin: 0;">
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Groen icoon</li>
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Warme, persoonlijke toon</li>
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Voor: families, mantelzorgers</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Pro -->
+        <div class="variant-card">
+          <div class="variant-header pro">
+            <span class="variant-badge pro">Zakelijk</span>
+            <div class="variant-name">GerustThuis Pro</div>
+          </div>
+          <div class="variant-body">
+            <div class="variant-logo">
+              <svg viewBox="0 0 240 48" width="240" height="48">
+                <g>
+                  <rect width="48" height="48" rx="10" fill="#111827"/>
+                  <path d="M7 26 L24 10 L41 26" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="24" cy="33" r="3" fill="#10b981"/>
+                  <circle cx="24" cy="33" r="6" fill="none" stroke="#10b981" stroke-width="1.2" opacity="0.5"/>
+                  <circle cx="24" cy="33" r="10" fill="none" stroke="#10b981" stroke-width="1.2" opacity="0.25"/>
+                </g>
+                <text x="58" y="32" style="font-family: Inter, system-ui; font-size: 20px; font-weight: 600;">
+                  <tspan fill="#10b981">Gerust</tspan><tspan fill="#111827">Thuis</tspan>
+                </text>
+                <rect x="183" y="14" width="36" height="20" rx="4" fill="#111827"/>
+                <text x="201" y="28" text-anchor="middle" style="font-family: Inter, system-ui; font-size: 10px; font-weight: 600; fill: #fff;">PRO</text>
+              </svg>
+            </div>
+            <ul class="rules-list" style="margin: 0;">
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Antraciet icoon + PRO badge</li>
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Professionele, zakelijke toon</li>
+              <li style="padding: 8px 0;"><span class="rule-icon do">✓</span> Voor: thuiszorg, corporaties, gemeenten</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 4. Kleuren -->
+    <section id="colors" class="section">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2 class="section-title">Kleuren</h2>
+      </div>
+      
+      <h3>Primair palet</h3>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-swatch" style="background: #10b981;"></div>
+          <div class="color-info">
+            <div class="color-name">Gerust Groen</div>
+            <div class="color-hex">#10b981</div>
+            <div class="color-use">Accent, positieve status, CTA's</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #111827;"></div>
+          <div class="color-info">
+            <div class="color-name">Antraciet</div>
+            <div class="color-hex">#111827</div>
+            <div class="color-use">Koppen, belangrijke tekst</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #6b7280;"></div>
+          <div class="color-info">
+            <div class="color-name">Warm Grijs</div>
+            <div class="color-hex">#6b7280</div>
+            <div class="color-use">Bodytekst</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #f3f4f6; border-bottom: 1px solid #e5e7eb;"></div>
+          <div class="color-info">
+            <div class="color-name">Licht Grijs</div>
+            <div class="color-hex">#f3f4f6</div>
+            <div class="color-use">Achtergronden</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #ffffff; border-bottom: 1px solid #e5e7eb;"></div>
+          <div class="color-info">
+            <div class="color-name">Wit</div>
+            <div class="color-hex">#ffffff</div>
+            <div class="color-use">Cards, content</div>
+          </div>
+        </div>
+      </div>
+      
+      <h3>Status kleuren</h3>
+      <p><strong>Let op:</strong> Rood alleen voor échte problemen. Groen is de standaard.</p>
+      <div class="status-grid">
+        <div class="status-card">
+          <div class="status-dot" style="background: #10b981;"></div>
+          <div>
+            <div class="status-name">Normaal / goed</div>
+            <div class="status-hex">#10b981</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: #f59e0b;"></div>
+          <div>
+            <div class="status-name">Let op</div>
+            <div class="status-hex">#f59e0b</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: #ef4444;"></div>
+          <div>
+            <div class="status-name">Aandacht nodig</div>
+            <div class="status-hex">#ef4444</div>
+          </div>
+        </div>
+        <div class="status-card">
+          <div class="status-dot" style="background: #9ca3af;"></div>
+          <div>
+            <div class="status-name">Inactief</div>
+            <div class="status-hex">#9ca3af</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 5. Typografie -->
+    <section id="typography" class="section">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2 class="section-title">Typografie</h2>
+      </div>
+      
+      <h3>Font</h3>
+      <p><strong>Inter</strong> (of system-ui als fallback)</p>
+      
+      <div class="type-sample">
+        <div class="type-h1">H1 - Hoofdtitel (24px, weight 600)</div>
+        <div class="type-h2">H2 - Sectietitel (18px, weight 600)</div>
+        <div class="type-h3">H3 - Card titel (16px, weight 600)</div>
+        <div class="type-body">Body tekst - Voor lopende tekst (14px, weight 400)</div>
+        <div class="type-small">Small / caption - Voor timestamps en labels (12px, weight 400)</div>
+      </div>
+      
+      <h3>Regels</h3>
+      <ul class="rules-list">
+        <li><span class="rule-icon dont">✗</span> Nooit volledig hoofdletters (behalve "OK" of "ID")</li>
+        <li><span class="rule-icon dont">✗</span> Geen cursief, nooit</li>
+        <li><span class="rule-icon do">✓</span> Line-height: 1.5 voor bodytekst</li>
+      </ul>
+    </section>
+    
+    <!-- 6. Componenten -->
+    <section id="components" class="section">
+      <div class="section-header">
+        <span class="section-number">6</span>
+        <h2 class="section-title">Componenten</h2>
+      </div>
+      
+      <h3>Buttons</h3>
+      <div class="button-grid">
+        <button class="btn btn-primary">Primary</button>
+        <button class="btn btn-secondary">Secondary</button>
+        <button class="btn btn-ghost">Ghost</button>
+      </div>
+      
+      <h3>Notificatie voorbeeld</h3>
+      <div class="component-example">
+        <div class="notification-card">
+          <div class="notification-status">
+            <div class="dot" style="background: #f59e0b;"></div>
+            <span class="text" style="color: #f59e0b;">Let op</span>
+          </div>
+          <div class="notification-title">Rustige middag</div>
+          <div class="notification-body">Geen activiteit in huis sinds 12:00. Waarschijnlijk even weg, maar check gerust.</div>
+        </div>
+      </div>
+      
+      <h3>Spacing</h3>
+      <p>Basis: 4px</p>
+      <div class="spacing-grid">
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 4px; height: 4px;"></div>
+          <div class="spacing-label">xs</div>
+          <div class="spacing-value">4px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 8px; height: 8px;"></div>
+          <div class="spacing-label">sm</div>
+          <div class="spacing-value">8px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 16px; height: 16px;"></div>
+          <div class="spacing-label">md</div>
+          <div class="spacing-value">16px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 24px; height: 24px;"></div>
+          <div class="spacing-label">lg</div>
+          <div class="spacing-value">24px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 32px; height: 32px;"></div>
+          <div class="spacing-label">xl</div>
+          <div class="spacing-value">32px</div>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: 48px; height: 48px;"></div>
+          <div class="spacing-label">2xl</div>
+          <div class="spacing-value">48px</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 7. Communicatie -->
+    <section id="communication" class="section">
+      <div class="section-header">
+        <span class="section-number">7</span>
+        <h2 class="section-title">Communicatie</h2>
+      </div>
+      
+      <h3>Statusmeldingen</h3>
+      <div class="example-grid">
+        <div class="example-card">
+          <div class="example-header dont">✗ Nooit zeggen</div>
+          <div class="example-content">
+            "ALERT: Geen beweging gedetecteerd!"<br><br>
+            "Anomalie score: 0.73"<br><br>
+            "Sensor offline"<br><br>
+            "Gebruiker inactief"
+          </div>
+        </div>
+        <div class="example-card">
+          <div class="example-header do">✓ Wel zeggen</div>
+          <div class="example-content">
+            "Rustige ochtend tot nu toe"<br><br>
+            "Iets anders dan normaal"<br><br>
+            "We missen even het zicht"<br><br>
+            "Nog geen activiteit vandaag"
+          </div>
+        </div>
+      </div>
+      
+      <h3>Verboden woorden</h3>
+      <ul class="rules-list">
+        <li><span class="rule-icon dont">✗</span> "Alert" of "Alarm"</li>
+        <li><span class="rule-icon dont">✗</span> "Probleem gedetecteerd"</li>
+        <li><span class="rule-icon dont">✗</span> "Afwijking" of "Anomalie"</li>
+        <li><span class="rule-icon dont">✗</span> "Geen beweging" (klinkt als dood)</li>
+        <li><span class="rule-icon dont">✗</span> Technisch jargon</li>
+      </ul>
+    </section>
+    
+    <!-- 8. Don'ts -->
+    <section id="donts" class="section">
+      <div class="section-header">
+        <span class="section-number">8</span>
+        <h2 class="section-title">Don'ts</h2>
+      </div>
+      
+      <ul class="rules-list">
+        <li><span class="rule-icon dont">✗</span> Donkere mode (doelgroep heeft vaak moeite met)</li>
+        <li><span class="rule-icon dont">✗</span> Kleine tekst (&lt;14px voor body)</li>
+        <li><span class="rule-icon dont">✗</span> Complexe grafieken met veel lijnen</li>
+        <li><span class="rule-icon dont">✗</span> Alarmerende rode kleur als default</li>
+        <li><span class="rule-icon dont">✗</span> Animaties die afleiden</li>
+        <li><span class="rule-icon dont">✗</span> Technische termen in UI</li>
+        <li><span class="rule-icon dont">✗</span> Emoji's (behalve 👋 in onboarding)</li>
+        <li><span class="rule-icon dont">✗</span> Stockfoto's van lachende ouderen</li>
+        <li><span class="rule-icon dont">✗</span> Medische claims of terminologie</li>
+        <li><span class="rule-icon dont">✗</span> "Smart home" of "IoT" language</li>
+      </ul>
+    </section>
+    
+  </main>
+  
+  <footer class="footer">
+    <p><strong>GerustThuis</strong> — gerustthuis.care</p>
+    <p>Brandbook versie 1.0 — Februari 2026</p>
+  </footer>
+
+</body>
+</html>

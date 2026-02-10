@@ -12,24 +12,27 @@ Actuele database structuur in Supabase (gerustthuis-supabase).
 ┌─────────────────┐     ┌─────────────────┐
 │   hue_config    │────<│   hue_devices   │
 │  (OAuth tokens) │     │ (lampen/sensors)│
-└─────────────────┘     └────────┬────────┘
-                                 │
-                        ┌────────┴────────┐
-                        │                 │
-               ┌────────▼────────┐  ┌─────▼─────────────┐
-               │ activity_events │  │ physical_devices  │
-               │  (alle events)  │  │ (sensor grouping) │
-               └────────┬────────┘  └───────────────────┘
-                        │
-               ┌────────▼────────┐
-               │  room_activity  │
-               │(5-min aggregat) │
-               └────────┬────────┘
-                        │
-               ┌────────▼────────────┐
-               │room_activity_hourly │
-               │      (view)         │
-               └─────────────────────┘
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         │              ┌────────┴────────┐
+         │              │                 │
+         │     ┌────────▼────────┐  ┌─────▼─────────────┐
+         │     │ activity_events │  │ physical_devices  │
+         │     │  (alle events)  │  │ (sensor grouping) │
+         │     └────────┬────────┘  └───────────────────┘
+         │              │
+         │     ┌────────┴────────────────────┐
+         │     │                             │
+         │     ▼                             ▼
+         │  ┌────────────────┐    ┌─────────────────────┐
+         │  │ room_activity  │    │ daily_activity_stats│
+         │  │(5-min aggregat)│    │   (dag statistiek)  │
+         │  └───────┬────────┘    └─────────────────────┘
+         │          │
+         │  ┌───────▼────────────┐
+         └─>│room_activity_hourly│
+            │      (view)        │
+            └────────────────────┘
 ```
 
 ---
@@ -221,6 +224,50 @@ CREATE INDEX idx_room_activity_room ON room_activity(room_name);
 
 ---
 
+### 6. `daily_activity_stats` - Dagelijkse statistieken per bewoner
+
+```sql
+CREATE TABLE daily_activity_stats (
+    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    config_id             UUID NOT NULL REFERENCES hue_config(id) ON DELETE CASCADE,
+    date                  DATE NOT NULL,
+    first_activity        TIME,                    -- Tijdstip eerste event
+    last_activity         TIME,                    -- Tijdstip laatste event
+    total_events          INTEGER DEFAULT 0,       -- Totaal aantal events
+    events_per_hour       INTEGER[],               -- Array met counts per uur (24 elementen)
+    active_hours          INTEGER DEFAULT 0,       -- Uren met ≥1 event
+    rooms_active          INTEGER DEFAULT 0,       -- Unieke kamers met activiteit
+    rooms_available       INTEGER DEFAULT 0,       -- Totaal kamers met sensoren
+    longest_gap_minutes   INTEGER DEFAULT 0,       -- Langste gap tussen events
+    night_events          INTEGER DEFAULT 0,       -- Events 23:00-06:00
+    night_active_hours    INTEGER DEFAULT 0,       -- Actieve uren 23:00-06:00
+    created_at            TIMESTAMPTZ DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ DEFAULT NOW(),
+
+    UNIQUE(config_id, date)
+);
+
+CREATE INDEX idx_daily_activity_stats_config ON daily_activity_stats(config_id);
+CREATE INDEX idx_daily_activity_stats_date ON daily_activity_stats(date DESC);
+```
+
+**Kolom beschrijvingen:**
+| Kolom | Beschrijving |
+|-------|--------------|
+| `first_activity` | Tijdstip (TIME) van eerste event die dag |
+| `last_activity` | Tijdstip (TIME) van laatste event die dag |
+| `events_per_hour` | Array[24] met event counts per uur (index 0 = 00:00-01:00) |
+| `active_hours` | Aantal uren met minimaal 1 event |
+| `rooms_active` | Aantal unieke kamers met activiteit |
+| `rooms_available` | Totaal aantal kamers met sensoren voor deze bewoner |
+| `longest_gap_minutes` | Langste periode zonder events tussen first en last activity |
+| `night_events` | Events tussen 23:00-06:00 |
+| `night_active_hours` | Uren met activiteit tussen 23:00-06:00 |
+
+**Wordt bijgewerkt door:** `calculate_daily_activity_stats()` functie
+
+---
+
 ## Views
 
 ### `room_activity_hourly` - Uurlijkse activiteit per kamer (RLS-enabled)
@@ -335,6 +382,40 @@ Events worden realtime geaggregeerd in `room_activity`:
 
 ---
 
+## Database Functies
+
+### `calculate_daily_activity_stats(config_id, date)`
+
+Berekent dagelijkse statistieken voor één bewoner op één dag.
+
+```sql
+SELECT calculate_daily_activity_stats(
+    'config-uuid'::uuid,
+    '2026-01-31'::date
+);
+```
+
+**Berekent:**
+- Eerste en laatste activiteit van de dag
+- Totaal events en events per uur (array[24])
+- Actieve uren en actieve kamers
+- Langste gap tussen events
+- Nachtactiviteit (23:00-06:00)
+
+### `refresh_daily_activity_stats(config_id, days_back)`
+
+Batch functie voor meerdere dagen/configs.
+
+```sql
+-- Herbereken laatste 7 dagen voor alle configs
+SELECT * FROM refresh_daily_activity_stats(NULL, 7);
+
+-- Herbereken laatste 30 dagen voor specifieke config
+SELECT * FROM refresh_daily_activity_stats('config-uuid', 30);
+```
+
+---
+
 ## Row Level Security (RLS)
 
 RLS is ingeschakeld op alle tabellen voor multi-tenant isolatie.
@@ -360,6 +441,13 @@ CREATE POLICY "Users view own events" ON activity_events
     ));
 
 CREATE POLICY "Users view own room activity" ON room_activity
+    FOR SELECT TO authenticated
+    USING (config_id IN (
+        SELECT id FROM hue_config
+        WHERE user_email = auth.jwt() ->> 'email'
+    ));
+
+CREATE POLICY "Users view own daily stats" ON daily_activity_stats
     FOR SELECT TO authenticated
     USING (config_id IN (
         SELECT id FROM hue_config
@@ -476,6 +564,7 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 
 1. `004_room_activity_hourly_table.sql` - room_activity tabel + room_activity_hourly view
 2. `005_rls_policies.sql` - Row Level Security policies
+3. `006_daily_activity_stats.sql` - daily_activity_stats tabel + berekeningsfuncties
 
 ---
 
@@ -495,3 +584,5 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 | room_activity | idx_room_activity_room | room_name |
 | physical_devices | idx_physical_devices_config | config_id |
 | physical_devices | idx_physical_devices_room | room_name |
+| daily_activity_stats | idx_daily_activity_stats_config | config_id |
+| daily_activity_stats | idx_daily_activity_stats_date | date DESC |

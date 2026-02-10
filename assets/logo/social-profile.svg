@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- GerustThuis Social Media Profile (400x400) -->
+  
+  <rect width="400" height="400" fill="#10b981"/>
+  
+  <!-- Protective roof -->
+  <path 
+    d="M60 210 L200 85 L340 210"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Person dot -->
+  <circle cx="200" cy="280" r="24" fill="#ffffff"/>
+  
+  <!-- Signal rings -->
+  <circle cx="200" cy="280" r="48" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.5"/>
+  <circle cx="200" cy="280" r="80" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.25"/>
+</svg>

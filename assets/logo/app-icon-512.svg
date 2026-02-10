@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- GerustThuis App Icon (512x512) -->
+  
+  <rect width="512" height="512" rx="102" fill="#10b981"/>
+  
+  <!-- Protective roof -->
+  <path 
+    d="M80 272 L256 112 L432 272"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="28"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Person dot -->
+  <circle cx="256" cy="352" r="32" fill="#ffffff"/>
+  
+  <!-- Signal rings around person -->
+  <circle cx="256" cy="352" r="64" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.5"/>
+  <circle cx="256" cy="352" r="104" fill="none" stroke="#ffffff" stroke-width="12" opacity="0.25"/>
+</svg>
