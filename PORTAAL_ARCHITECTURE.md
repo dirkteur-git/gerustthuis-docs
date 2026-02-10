@@ -93,59 +93,59 @@ gerustthuis-portaal/
 
 ### Dashboard.vue - Heatmap Overzicht
 
-**Doel:** 7-dagen activiteit heatmap met kamer filter
+**Doel:** 7-dagen activiteit heatmap, status banner, recente activiteit, offline sensoren
+
+**Auto-refresh:** Elke 5 minuten wordt alle data herladen via `setInterval`.
 
 **Tabellen/Views gebruikt:**
 
 | Tabel | Query | Doel |
 |-------|-------|------|
-| `hue_devices` | `SELECT room_name WHERE room_name IS NOT NULL` | Unieke kamers voor filter |
-| `physical_devices` | `SELECT id, battery_updated_at` | Motion sensor health check |
-| `hue_devices` | `SELECT id, last_state_at WHERE device_type = 'contact_sensor'` | Deur sensor health check |
-| `room_activity_hourly` | `SELECT room_name, hour, motion_events, door_events, updated_at WHERE hour >= 7 dagen geleden` | Heatmap data |
+| `daily_activity_stats` | `SELECT * WHERE date = today` | Vandaag statistieken |
+| `daily_activity_stats` | `SELECT total_events, first_activity, last_activity, events_per_hour WHERE date >= 14 dagen geleden` | Baseline gemiddelden |
+| `room_activity_hourly` | `SELECT room_name, hour, total_events WHERE hour >= 7 dagen geleden` | Heatmap data |
+| `activity_events` | `SELECT room_name, device_type, recorded_at ORDER BY recorded_at DESC LIMIT 50` | Recente activiteit |
+| `hue_devices` | `SELECT name, room_name, last_state_at WHERE device_type IN (motion_sensor, contact_sensor) AND last_state_at < 90 min geleden` | Offline sensoren |
 
 **Data flow:**
 
 ```
 onMounted()
     │
-    ├── loadRooms()
-    │     └── hue_devices.room_name (distinct)
+    ├── loadTodayStats()
+    │     └── daily_activity_stats (vandaag) + activity_events fallback
     │
-    ├── loadSensorHealth()
-    │     ├── physical_devices (motion sensors)
-    │     └── hue_devices WHERE device_type = 'contact_sensor'
+    ├── loadAverageStats()
+    │     └── daily_activity_stats (14 dagen, baseline)
     │
-    └── loadHeatmapData()
-          └── room_activity_hourly (7 dagen)
+    ├── loadHeatmapData()
+    │     └── room_activity_hourly (7 dagen)
+    │
+    ├── loadRecentActivity()
+    │     └── activity_events (laatste 50)
+    │
+    └── loadOfflineSensors()
+          └── hue_devices (last_state_at > 90 min)
+
+    + setInterval(refreshAllData, 5 * 60 * 1000)
 ```
 
-**Sensor health berekening:**
+**Status banner logica:**
 ```javascript
-// Sensor is "actief" als laatste update < 90 minuten geleden
-const ninetyMinutesAgo = new Date(Date.now() - 90 * 60 * 1000)
-
-// Motion sensors - check last_state_at van hue_devices
-activeMotion = motionSensors.filter(d =>
-  d.last_state_at > ninetyMinutesAgo
-).length
-
-// Contact sensors (standalone)
-activeContact = contactSensors.filter(d =>
-  d.last_state_at > ninetyMinutesAgo
-).length
-
-sensorscore = ((activeMotion + activeContact) / total) * 100
+const ratio = today.totalEvents / Math.max(avg.totalEvents, 1)
+// Geen activiteit + normaal > 10     → "Erg rustig"
+// ratio < 0.5 && events < 20         → "Rustige dag"
+// ratio > 1.5                         → "Actieve dag"
+// anders                              → "Normale dag"
+// < 7 dagen data                      → "We leren nog"
 ```
-
-> **Let op:** We checken `last_state_at` van `hue_devices` (niet `battery_updated_at` van `physical_devices`), omdat `last_state_at` elke 5 minuten wordt geüpdatet bij state changes, terwijl `battery_updated_at` alleen elk uur wordt geüpdatet.
 
 **Heatmap aggregatie:**
 ```javascript
 // Voor elke dag (7 dagen):
 //   Voor elk uur (0-23):
-//     count = motion_events + door_events
-//     roomCounts = { "Woonkamer": 5, "Hal": 3, ... }
+//     count = total_events (per kamer opgeteld)
+//     rooms = { "Woonkamer": 5, "Hal": 3, ... }
 ```
 
 ---
@@ -397,47 +397,26 @@ onMounted(async () => {
 
 ---
 
-## Bekende Beperkingen
-
-### 1. Geen Auto-Refresh
-
-Data wordt **alleen bij mount** geladen. Geen:
-- Polling interval
-- Real-time subscriptions
-- Handmatige refresh knop
-
-**Oplossing:** Implementeer polling + refresh knop. Zie [ROADMAP.md](ROADMAP.md).
-
-```javascript
-// Toe te voegen aan Dashboard.vue
-let refreshInterval = null
-
-onMounted(async () => {
-  await refreshAllData()
-  refreshInterval = setInterval(refreshAllData, 5 * 60 * 1000)
-})
-
-onUnmounted(() => {
-  if (refreshInterval) clearInterval(refreshInterval)
-})
-```
-
-### Geïmplementeerde Views
-
-Alle views zijn geïmplementeerd:
+## Geïmplementeerde Views
 
 | View | Functie |
 |------|---------|
-| `Dashboard.vue` | 7-dagen heatmap, dagstatistieken, recente activiteit, offline sensoren |
+| `Dashboard.vue` | 7-dagen heatmap, status banner, recente activiteit, offline sensoren, auto-refresh (5 min) |
 | `Patronen.vue` | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
-| `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur |
+| `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur (developer view) |
 | `Woning.vue` | Kamers overzicht, devices per kamer, activiteit per kamer |
-| `Instellingen.vue` | Hue koppeling, huishouden beheer |
+| `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers |
 | `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
 
-### Multi-tenant (geïmplementeerd)
+## Multi-tenancy
 
 Household-based multi-tenancy via `get_accessible_config_ids()`. Elke user ziet alleen data van eigen huishouden.
+
+## Bekende Beperkingen
+
+- Patronen en Analyse views hebben geen auto-refresh (alleen Dashboard heeft dit)
+- Geen real-time Supabase subscriptions (polling-based)
+- Geen handmatige refresh knop op Patronen/Analyse
 
 ---
 

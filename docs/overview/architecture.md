@@ -4,16 +4,49 @@
 
 GerustThuis is een AI-powered thuismonitoringsysteem voor ouderen en hun mantelzorgers. Het systeem detecteert activiteitspatronen via sensoren en waarschuwt mantelzorgers bij afwijkingen, zonder camera's of microfoons.
 
-## Design Principes
+## Huidige Architectuur (Cloud-only)
 
-| Principe | Beschrijving |
-|----------|--------------|
-| **Privacy/AVG** | Ruwe bewegingsdata blijft lokaal op de Pi. Alleen samenvattingen naar de cloud. |
-| **Betrouwbaarheid** | Pi werkt door bij internet-uitval. Gateway heartbeat naar cloud voor "Pi offline" detectie. |
-| **Kosten** | Supabase free tier gaat lang mee met alleen geaggregeerde data. |
-| **Latency** | Kritieke detectie (geen beweging) draait lokaal, niet afhankelijk van cloud roundtrip. |
+De huidige implementatie draait volledig in de cloud via Philips Hue + Supabase:
 
-## Data Flow
+```
+Philips Hue Bridge
+      │ ZigBee (sensoren + lampen)
+      │
+      ▼
+┌─────────────────────────────────────┐
+│   Supabase Edge Functions           │
+│   (hue-poll-state, elke 5 min)     │
+│   - Hue v1 + v2 API polling        │
+│   - State change detection          │
+│   - Token refresh                   │
+└───────────┬─────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│   Supabase PostgreSQL               │
+│   - activity_events (ruwe events)   │
+│   - room_activity (5-min aggregat)  │
+│   - daily_activity_stats (dag)      │
+│   - RLS via get_accessible_config_ids() │
+└───────────┬─────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│   Vue 3 Portaal (Vercel)            │
+│   - Dashboard (heatmap, status)     │
+│   - Patronen (dagritme, trends)     │
+│   - Analyse (z-score anomaly)       │
+└─────────────────────────────────────┘
+            │
+            ▼
+      ┌─────────────┐
+      │ Mantelzorger│
+      └─────────────┘
+```
+
+## Toekomstige Architectuur (Lokaal + Cloud)
+
+De geplande architectuur voegt een lokale Raspberry Pi gateway toe voor betere privacy en realtime detectie:
 
 ```
 Aqara Sensoren
@@ -23,11 +56,6 @@ Aqara Sensoren
 │  Zigbee2MQTT    │
 └────────┬────────┘
          │ MQTT
-         ▼
-┌─────────────────┐
-│    Mosquitto    │
-└────────┬────────┘
-         │
          ▼
 ┌─────────────────────────────────────┐
 │         Python Processor            │
@@ -46,74 +74,39 @@ Aqara Sensoren
 ┌───────────────┐ ┌─────────────────┐
 │ Lokale Alerts │ │  Web Dashboard  │
 │  (speaker)    │ │   Vue 3 App     │
-└───────────────┘ └────────┬────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │ Mantelzorger│
-                    └─────────────┘
+└───────────────┘ └─────────────────┘
 ```
 
-## Componenten
+### Voordelen van lokale gateway
 
-### 1. Sensoren (Zigbee/WiFi/Z-Wave)
+| Principe | Beschrijving |
+|----------|--------------|
+| **Privacy/AVG** | Ruwe bewegingsdata blijft lokaal op de Pi. Alleen samenvattingen naar de cloud. |
+| **Betrouwbaarheid** | Pi werkt door bij internet-uitval. |
+| **Latency** | Kritieke detectie (geen beweging) draait lokaal. |
+| **Kosten** | Minder cloud-calls, Supabase free tier gaat langer mee. |
 
-Zie [Sensor Specificaties](../hardware/sensors.md)
-
-### 2. Raspberry Pi Gateway
-
-**Stack:**
-- Zigbee2MQTT (Zigbee → MQTT bridge)
-- Mosquitto (MQTT broker, met credentials)
-- Python processor (event verwerking)
-- SQLite (lokale opslag)
-- Systemd services (auto-start)
-
-**Security:**
-- MQTT: Mosquitto met username/password (`allow_anonymous false`)
-- API Key: Opgeslagen in `/etc/gerustthuis/.env` (root:root 600)
-- Zigbee2MQTT: Eigen user/pass voor MQTT verbinding
-- Supabase: Service key (niet anon key) voor gateway sync
-
-### 3. Cloud (Supabase)
-
-Zie [Database Schema](../database/schema.md)
-
-### 4. Frontend
-
-**Technologie:**
-- Vue 3 + Composition API
-- Vite
-- Tailwind CSS
-- Vercel hosting
+> **Status:** De lokale gateway is nog niet geïmplementeerd. Zie [sensor specificaties](../hardware/sensors.md) voor geplande hardware.
 
 ## Privacy Model
 
-### Wat ziet wie?
+### Huidige situatie (cloud-only)
 
-| Data | Bewoner (lokaal) | Mantelzorger (app) | Cloud |
-|------|------------------|-------------------|-------|
-| Live sensordata | Ja (op WiFi) | Nee | Nee |
-| Welke kamer actief | Ja | Nee | Nee |
-| Exacte tijden | Ja | Nee | Alleen samenvattingen |
-| Bewegingshistorie | Ja (14 dagen) | Nee | Nee |
-| Alert meldingen | Ja | Ja | Ja |
-| Sensor status | Ja | Ja | Ja |
-| Batterijniveaus | Ja | Ja | Ja |
-| Hub online status | Ja | Ja | Ja |
+Alle data gaat via Supabase (cloud). Data is beveiligd met:
+- Row Level Security (RLS) per huishouden
+- OAuth tokens voor Hue API
+- Supabase Auth voor gebruikers
 
-### Toegangsregels
+### Toekomstig (lokaal + cloud)
 
-- **Lokaal netwerk (WiFi):** Volledige toegang tot live dashboard en historische data
-- **Op afstand (internet):** Alleen alerts, sensor health, en hub status
-- **Ruwe data:** Verlaat nooit de woning, blijft op de Pi
+| Data | Lokaal (Pi) | Cloud (Supabase) |
+|------|-------------|-------------------|
+| Ruwe sensor events | Ja (14 dagen) | Nee |
+| Aggregaties per uur | Ja | Ja |
+| Dagelijkse stats | Ja | Ja |
+| Alert meldingen | Ja | Ja |
+| Sensor status | Ja | Ja |
 
-### Baseline Learning
+## Componenten
 
-Het systeem leert 7 dagen het normale patroon:
-- Gemiddelde opstaantijd
-- Gemiddelde laatste activiteit
-- Normale kamervolgorde
-- Typische koelkast-openingen
-
-Na de baseline week worden afwijkingen pas gemeld.
+Zie de hoofd [ARCHITECTURE.md](../../ARCHITECTURE.md) voor de volledige componentbeschrijving.

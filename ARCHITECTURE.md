@@ -2,285 +2,178 @@
 
 ## Overzicht
 
-GerustThuis is een thuismonitoring systeem voor ouderen. Het systeem verzamelt sensordata en detecteert activiteitspatronen.
+GerustThuis is een thuismonitoring systeem voor ouderen. Het systeem verzamelt sensordata via Philips Hue en detecteert activiteitspatronen.
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Home Assistant │────▶│  Raspberry Pi   │────▶│    Supabase     │
-│    (sensoren)   │     │ (gerustthuis-   │     │    (cloud)      │
-│                 │     │     device)     │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
+│  Philips Hue    │────▶│   Supabase      │────▶│  Vue 3 Portaal  │
+│    Bridge       │     │  Edge Functions  │     │   (Frontend)    │
+│  (sensoren +    │     │  (elke 5 min)   │     │                 │
+│   lampen)       │     │                 │     │                 │
+└─────────────────┘     └────────┬────────┘     └─────────────────┘
+                                 │
+                                 ▼
                         ┌─────────────────┐
-                        │    InfluxDB     │
-                        │    (lokaal)     │
+                        │   PostgreSQL    │
+                        │   (Supabase)    │
                         └─────────────────┘
 ```
 
 ## Componenten
 
-### 1. gerustthuis-device (Raspberry Pi)
+### 1. Philips Hue Bridge (Sensordata)
 
-Python applicatie die draait op een Raspberry Pi.
+De Hue Bridge is de enige databron. Sensoren en lampen zijn via ZigBee verbonden met de Bridge.
 
-**Bestanden:**
-- `main.py` - Entry point
-- `src/ha_client.py` - Home Assistant WebSocket verbinding
-- `src/cloud_sync.py` - Supabase synchronisatie
-- `src/influx_client.py` - Lokale InfluxDB opslag
-- `src/activity_detector.py` - Inactiviteitsdetectie
+**Sensor types:**
+- Motion sensoren (bewegingsdetectie)
+- Contact sensoren (deur open/dicht)
+- Lampen (aan/uit als activiteitssignaal)
+- Knoppen (schakelaars, dimmers)
 
-**Flow:**
-1. Verbindt met Home Assistant via WebSocket
-2. Ontvangt state_changed events voor geconfigureerde sensoren
-3. Schrijft naar InfluxDB (lokaal, real-time)
-4. Queued events voor Supabase (cloud, elke 5 min)
+Zie [HUE_INTEGRATION.md](HUE_INTEGRATION.md) voor API details.
 
-### 2. gerustthuis-cloud (Frontend + Supabase)
+### 2. Supabase Edge Functions (Backend)
 
-Vue.js frontend met Supabase backend.
+TypeScript Edge Functions die elke 5 minuten draaien:
 
-**Supabase functies:**
-- `supabase/functions/hue-token-exchange/` - Hue OAuth flow
-- `supabase/functions/hue-link-bridge/` - Bridge koppeling
+| Function | Schedule | Beschrijving |
+|----------|----------|--------------|
+| `hue-poll-state` | `*/5 * * * *` | Poll alle devices, detecteer state changes, schrijf naar activity_events en room_activity |
+| `hue-poll-battery` | `0 * * * *` | Batterij levels monitoren |
+| `hue-token-exchange` | On-demand | OAuth token exchange bij Hue koppeling |
 
-### 3. hue-simple (Hue Package)
+**Locatie:** `gerustthuis-supabase/functions/`
 
-Standalone Philips Hue integratie.
+**Gedeelde code:** `gerustthuis-supabase/functions/_shared/`
+- `cors.ts` - CORS headers
+- `hue-client.ts` - Hue API client, token refresh, state vergelijking
 
-**Bestanden:**
-- `packages/hue/client.js` - HueClient class
-- `packages/hue/auth.js` - HueAuth class (OAuth)
-- `server.js` - Proxy server voor lokale Hue API
+### 3. Supabase PostgreSQL (Database)
+
+Alle data wordt opgeslagen in Supabase PostgreSQL met Row Level Security.
+
+**Kerntabellen:**
+- `hue_config` - OAuth tokens per gebruiker
+- `hue_devices` - Alle devices met huidige state
+- `physical_devices` - Gegroepeerde fysieke sensoren
+- `activity_events` - Ruwe sensor events (append-only)
+- `room_activity` - 5-minuten aggregaties per kamer
+- `daily_activity_stats` - Dagelijkse statistieken
+- `households` - Multi-tenant huishoudens
+- `household_members` - Gebruikersrollen per huishouden
+- `user_profiles` - Gebruikersprofielen
+
+Zie [DATABASE_DESIGN.md](DATABASE_DESIGN.md) voor volledig schema.
+
+### 4. Vue 3 Portaal (Frontend)
+
+Dashboard applicatie voor mantelzorgers.
+
+**Tech stack:** Vue 3, Vite, Tailwind CSS, Supabase JS client
+
+**Views:**
+- Dashboard - 7-dagen heatmap, status banner, recente activiteit
+- Patronen - Dagritme, vandaag vs normaal, weekpatroon, trends
+- Analyse - Developer view met z-score anomaly detection
+- Woning - Kamers en devices overzicht
+- Instellingen - Hue koppeling, huishouden beheer
+
+Zie [PORTAAL_ARCHITECTURE.md](PORTAAL_ARCHITECTURE.md) voor frontend details.
+
+### 5. Marketing Website
+
+Vue 3 marketing website op apart domein.
+
+**Tech stack:** Vue 3, Vite, Tailwind CSS v4, Pinia
+
+**Locatie:** `gerustthuis-website/`
 
 ---
 
-## Database Schema (v2)
-
-### Tabellen
+## Data Flow
 
 ```
-┌─────────────────────┐
-│  integration_types  │  (reference)
-├─────────────────────┤
-│ code (PK)           │  hue, home_assistant, homey
-│ name                │
-│ description         │
-└─────────────────────┘
+Hue Bridge (v1 + v2 API)
+    │
+    ▼
+hue-poll-state (elke 5 min)
+    │
+    ├──► hue_devices.last_state (UPDATE - alleen bij change)
+    │
+    ├──► activity_events (INSERT bij state change)
+    │         │
+    │         ▼
+    └──► room_activity (UPSERT per 5-min window)
+                  │
+                  ▼
+         room_activity_hourly (VIEW - groepeert per uur)
+                  │
+                  ▼
+         Dashboard heatmap (7 dagen)
 
-┌─────────────────────┐
-│    item_types       │  (reference)
-├─────────────────────┤
-│ code (PK)           │  motion_sensor, contact_sensor, light, etc.
-│ name                │
-│ category            │  sensor, actuator, bridge
-└─────────────────────┘
-
-┌─────────────────────┐
-│   integrations      │
-├─────────────────────┤
-│ id (PK)             │
-│ user_id (FK)        │  → auth.users
-│ type                │  → integration_types.code
-│ name                │
-│ config (JSONB)      │  tokens, bridge_ip, etc.
-│ status              │  active, migrated, error
-│ last_sync_at        │
-└─────────────────────┘
+daily_activity_stats (berekend door calculate_daily_activity_stats())
          │
-         │ 1:N
          ▼
-┌─────────────────────┐
-│      items          │
-├─────────────────────┤
-│ id (PK)             │
-│ integration_id (FK) │  → integrations.id
-│ external_id         │  sensor.badkamer_temp / abc-def-123
-│ type                │  → item_types.code
-│ name                │
-│ location            │
-│ config (JSONB)      │
-│ state (JSONB)       │  huidige status
-└─────────────────────┘
-         │
-         │ 1:N
-         ▼
-┌─────────────────────┐
-│   measurements      │
-├─────────────────────┤
-│ id (PK)             │
-│ item_id (FK)        │  → items.id
-│ value (JSONB)       │  {"motion": true, "temperature": 21.5}
-│ recorded_at         │
-│ source              │  sync, webhook, manual
-└─────────────────────┘
+    Patronen + Analyse views
 ```
-
-### Data Model
-
-Een fysieke sensor kan meerdere metingen hebben in één JSONB value:
-
-```json
-// Hue Motion Sensor (SML003)
-{
-  "motion": true,
-  "temperature": 21.5,
-  "lux": 150,
-  "battery": 85
-}
-
-// Contact Sensor
-{
-  "contact": true
-}
-```
-
-### Integraties
-
-Dezelfde fysieke sensor kan via meerdere integraties binnenkomen:
-
-| Integration | external_id | Beschrijving |
-|-------------|-------------|--------------|
-| home_assistant | `binary_sensor.badkamer_beweging` | Via Home Assistant |
-| hue | `c2e812a7-4b0e-4bb4-b5a7-1e70684c6bc9` | Direct via Hue API |
-
-Beide zijn valide en worden apart opgeslagen. De `integration_id` zorgt voor scheiding.
 
 ---
 
-## Hue Integratie
+## Authenticatie
 
-### Authenticatie Flow
+### Gebruikers
+- Supabase Auth (email/password)
+- Automatische household aanmaak bij signup
+- Uitnodigingssysteem voor mantelzorgers
 
-1. **OAuth2** via Philips Hue Remote API
-2. **Link button** activeren op bridge
-3. **Username** aanmaken voor lokale API toegang
-
-```javascript
-// packages/hue/auth.js
-const auth = new HueAuth({ clientId, clientSecret, redirectUri });
-const authUrl = auth.getAuthorizeUrl();
-// User authorizes...
-const tokens = await auth.exchangeCode(code);
-const username = await auth.createUsername(tokens.access_token);
-```
-
-### Lokale API v2 (CLIP)
-
-```javascript
-// packages/hue/client.js
-const hue = new HueClient({ bridgeIp: '192.168.86.23', username: '...' });
-
-// Devices ophalen
-const devices = await hue.getDevices();
-const motion = await hue.getMotionSensors();
-const lights = await hue.getLights();
-
-// Lamp bedienen
-await hue.setLightOn(lightId, true);
-await hue.setLightBrightness(lightId, 80);
-
-// Device identificeren (knippert)
-await hue.identifyDevice(deviceId);
-```
-
-### Device Types
-
-| Hue Resource | Item Type | Opmerkingen |
-|--------------|-----------|-------------|
-| motion | motion_sensor | Onderdeel van SML001/SML003 |
-| temperature | (gecombineerd) | Onderdeel van motion sensor device |
-| light_level | (gecombineerd) | Onderdeel van motion sensor device |
-| contact | contact_sensor | SOC001 |
-| light | light | Lampen |
-| button | button | Dimmers, schakelaars |
-| device | - | Parent device met services |
+### Hue Integratie
+- OAuth 2.0 flow via Philips Hue Remote API
+- Token refresh automatisch bij polling
+- Zie [HUE_INTEGRATION.md](HUE_INTEGRATION.md)
 
 ---
 
-## Raspberry Pi Setup
+## Multi-tenancy
 
-### Vereisten
+Household-based multi-tenancy:
 
-- Python 3.9+
-- Home Assistant met Long-Lived Access Token
-- InfluxDB 2.x (lokaal)
-- Supabase project
-
-### Configuratie
-
-```yaml
-# config.yaml
-home_assistant:
-  url: http://homeassistant.local:8123
-  token: YOUR_LONG_LIVED_TOKEN
-
-supabase:
-  url: https://your-project.supabase.co
-  key: YOUR_SUPABASE_ANON_KEY
-  user_id: YOUR_USER_ID
-  sync_interval: 300  # 5 minuten
-
-influxdb:
-  url: http://localhost:8086
-  token: YOUR_INFLUX_TOKEN
-  org: gerustthuis
-  bucket: sensors
-
-sensors:
-  - entity_id: binary_sensor.badkamer_beweging
-    type: motion
-    room: Badkamer
-  - entity_id: binary_sensor.voordeur_contact
-    type: door
-    room: Hal
-  - entity_id: sensor.woonkamer_temperature
-    type: temperature
-    room: Woonkamer
+```
+households
+    │
+    ├── household_members (user_id, role: admin/viewer)
+    │
+    └── config_id → hue_config → alle data tabellen
 ```
 
-### Starten
+**Access control:** `get_accessible_config_ids()` SQL functie bepaalt welke config IDs een user mag zien. Alle RLS policies gebruiken deze functie.
 
+---
+
+## Deployment
+
+| Component | Hosting |
+|-----------|---------|
+| Portaal | Vercel |
+| Website | Vercel |
+| Database | Supabase |
+| Edge Functions | Supabase |
+
+---
+
+## Environment Variables
+
+### Frontend (gerustthuis-portaal)
 ```bash
-cd gerustthuis-device
-pip install -r requirements.txt
-python main.py
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=xxx
+VITE_HUE_CLIENT_ID=xxx
 ```
 
----
-
-## Supabase Configuratie
-
-### Environment Variables
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
+### Backend (Supabase Edge Functions)
+```bash
+HUE_CLIENT_ID=xxx
+HUE_CLIENT_SECRET=xxx
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=xxx
 ```
-
-### Row Level Security
-
-- Users zien alleen eigen data (`auth.uid() = user_id`)
-- Legacy data (user_id = NULL) is public voor development
-
-### Migraties
-
-Migratie scripts staan in `gerustthuis-cloud/supabase/migrations/`.
-
----
-
-## Huidige Status
-
-### Sensoren in Database
-
-| Type | Aantal | Bron |
-|------|--------|------|
-| motion_sensor | 12 | Home Assistant |
-| contact_sensor | 3 | Home Assistant |
-
-### Te Doen
-
-- [ ] Raspberry Pi code updaten voor v2 schema
-- [ ] Hue devices toevoegen aan database
-- [ ] Dashboard bouwen met realtime updates

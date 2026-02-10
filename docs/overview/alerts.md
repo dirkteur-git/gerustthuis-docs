@@ -1,71 +1,62 @@
 # Alert Systeem
 
+## Status
+
+> **Nog niet geïmplementeerd.** Dit document beschrijft het geplande alert systeem. Momenteel wordt anomaly detection alleen via de Analyse en Patronen views in het Portaal getoond, zonder actieve notificaties.
+
 ## Overzicht
 
-GerustThuis heeft een twee-laags alert systeem: lokaal (realtime) en cloud (batch/trends).
+GerustThuis plant een twee-laags alert systeem: frontend-detectie (huidige situatie) en backend-notificaties (toekomstig).
 
-## Anomalie Types
+## Huidige Implementatie
 
-| Code | Naam | Trigger | Severity | Waar |
-|------|------|---------|----------|------|
-| `NO_MOTION` | Geen beweging | Geen sensor activiteit > X uur (dag) | critical | Lokaal |
-| `LATE_START` | Laat opstaan | Eerste activiteit > 2u later dan gemiddeld | warning | Cloud |
-| `EARLY_END` | Vroeg naar bed | Laatste activiteit > 2u eerder dan gemiddeld | info | Cloud |
-| `NIGHT_UNREST` | Nachtelijke onrust | >3 bewegingen tussen 00:00-05:00 | warning | Lokaal |
-| `FRIDGE_SKIP` | Koelkast overgeslagen | Koelkast niet geopend voor 12:00 | warning | Lokaal |
-| `ROOM_MISSING` | Kamer overgeslagen | Belangrijke kamer (badkamer) niet bezocht | info | Cloud |
-| `LOW_ACTIVITY` | Weinig activiteit | <50% van gemiddeld dagelijks events | warning | Cloud |
-| `BATTERY_LOW` | Batterij laag | Sensor batterij <20% | info | Lokaal |
-| `GATEWAY_OFFLINE` | Gateway offline | Geen heartbeat >10 min | critical | Cloud |
+### Frontend Detectie (live)
 
-## Detectie Locatie
+Anomaly detection draait in de browser en wordt getoond op drie plekken:
 
-### Lokaal (realtime, urgent)
+| View | Methode | Wat wordt getoond |
+|------|---------|-------------------|
+| Dashboard | Ratio-check (events vandaag vs gemiddelde) | Status banner: "Normale dag", "Rustige dag", "Erg rustig", "Actieve dag" |
+| Patronen | Vergelijking vandaag vs 14-dagen baseline | 5 metrics met severity badges (low/medium/high) |
+| Analyse | Z-score per feature | Anomaly score 0-1, breakdown per feature |
 
-Deze checks draaien op de Raspberry Pi voor minimale latency:
+Zie [ANOMALY_DETECTION.md](../../ANOMALY_DETECTION.md) voor details over het algoritme.
 
-- **`NO_MOTION`:** Directe check, kan niet wachten op cloud
-- **`NIGHT_UNREST`:** Realtime detectie voor directe alert
-- **`FRIDGE_SKIP`:** Ochtend check
-- **`BATTERY_LOW`:** Bij elke sensor event
+### Wat nog ontbreekt
 
-### Cloud (batch, trends)
+- Geen backend-side anomaly checks (alles draait in de browser)
+- Geen email/push/SMS notificaties
+- Geen configureerbare drempelwaarden per huishouden
+- Geen alert historie/log
 
-Deze checks draaien in Supabase Edge Functions:
+## Geplande Anomalie Types
 
-- **`LATE_START`, `EARLY_END`:** Vergelijking met persoonlijke baseline
-- **`ROOM_MISSING`, `LOW_ACTIVITY`:** Dagelijkse analyse
-- **`GATEWAY_OFFLINE`:** Supabase Edge Function checkt last_seen
+| Code | Naam | Trigger | Severity |
+|------|------|---------|----------|
+| `NO_MOTION` | Geen beweging | Geen sensor activiteit > X uur (dag) | critical |
+| `LATE_START` | Laat opstaan | Eerste activiteit > 2u later dan gemiddeld | warning |
+| `EARLY_END` | Vroeg naar bed | Laatste activiteit > 2u eerder dan gemiddeld | info |
+| `NIGHT_UNREST` | Nachtelijke onrust | Veel nacht-events vs baseline | warning |
+| `LOW_ACTIVITY` | Weinig activiteit | <50% van gemiddeld dagelijks events | warning |
+| `BATTERY_LOW` | Batterij laag | Sensor batterij <20% | info |
 
-## Alert Kanalen
+## Geplande Configuratie
 
-### Lokaal (op Pi)
-
-- Speaker/buzzer voor directe alerts
-- Lokale webinterface (op WiFi)
-- SMS gateway fallback (optioneel)
-
-### Cloud
-
-- Push notificaties naar app
-- Email alerts
-- SMS (voor critical alerts)
-
-## Configuratie
-
-Alert thresholds zijn configureerbaar per huishouden:
+Alert thresholds configureerbaar per huishouden:
 
 ```json
 {
   "no_motion_hours": 4,
   "late_start_threshold_minutes": 120,
   "early_end_threshold_minutes": 120,
-  "night_start_hour": 0,
-  "night_end_hour": 5,
   "night_motion_threshold": 3,
-  "fridge_check_hour": 12,
   "low_activity_percentage": 50,
-  "battery_low_threshold": 20,
-  "gateway_offline_minutes": 10
+  "battery_low_threshold": 20
 }
 ```
+
+## Geplande Alert Kanalen
+
+- Email notificaties
+- Push notificaties (browser)
+- In-app alert historie

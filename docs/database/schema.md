@@ -2,153 +2,51 @@
 
 ## Overzicht
 
-GerustThuis gebruikt twee databases:
-1. **SQLite** (lokaal op Raspberry Pi) - ruwe sensor events
-2. **Supabase** (cloud) - samenvattingen, alerts, configuratie
+GerustThuis gebruikt **Supabase PostgreSQL** als enige database. Alle tabellen zijn beveiligd met Row Level Security (RLS).
 
-## Lokale Database (SQLite)
+Zie [DATABASE_DESIGN.md](../../DATABASE_DESIGN.md) voor het volledige schema met alle kolommen, indexen en queries.
 
-**Locatie:** Raspberry Pi (`/var/lib/gerustthuis/data.db`)
+## Tabellen
 
-### `sensor_events`
+### Sensordata
 
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | INTEGER | Primary key |
-| timestamp | DATETIME | Event tijdstip |
-| device_id | TEXT | Zigbee device ID |
-| event_type | TEXT | motion, contact, vibration |
-| value | TEXT | true/false of numeriek |
-| battery | INTEGER | Batterij percentage |
+| Tabel | Beschrijving |
+|-------|--------------|
+| `hue_config` | OAuth tokens en bridge configuratie per gebruiker |
+| `hue_devices` | Alle Hue devices (lampen, sensoren, knoppen) met huidige state |
+| `physical_devices` | Groepering van multi-capability sensoren (motion + temp + light) |
+| `activity_events` | Ruwe sensor events (append-only log) |
+| `room_activity` | 5-minuten aggregaties per kamer |
+| `daily_activity_stats` | Dagelijkse statistieken per bewoner |
 
-### `hourly_summary`
+### Views
 
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | INTEGER | Primary key |
-| hour | DATETIME | Uur (afgerond) |
-| device_id | TEXT | Zigbee device ID |
-| event_count | INTEGER | Aantal events |
-| first_event | DATETIME | Eerste event in uur |
-| last_event | DATETIME | Laatste event in uur |
+| View | Beschrijving |
+|------|--------------|
+| `room_activity_hourly` | Uurlijkse aggregatie van room_activity |
 
-**Retention:** 7-14 dagen (configureerbaar)
+### Gebruikers & Multi-tenancy
 
----
+| Tabel | Beschrijving |
+|-------|--------------|
+| `user_profiles` | Gebruikersprofiel (display_name, active_household_id) |
+| `households` | Huishoudens (naam, gekoppelde config_id) |
+| `household_members` | Lidmaatschap met rollen (admin/viewer) |
+| `household_invitations` | Uitnodigingen voor huishoudens |
 
-## Cloud Database (Supabase)
+## Row Level Security
 
-**URL:** Configureerbaar per deployment
+Alle tabellen gebruiken RLS. De centrale functie `get_accessible_config_ids()` bepaalt welke data een gebruiker mag zien op basis van:
+1. Household membership (via `household_members`)
+2. Directe email match op `hue_config` (fallback)
 
-### `households`
+## Toekomstig: Lokale Database
 
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| name | text | Naam huishouden |
-| timezone | text | Tijdzone |
-| thresholds_json | jsonb | Alert configuratie |
-| created_at | timestamp | Aanmaakdatum |
+> **Nog niet geïmplementeerd.** Bij introductie van de Raspberry Pi gateway wordt een lokale SQLite database toegevoegd:
 
-### `gateways`
+| Tabel | Beschrijving |
+|-------|--------------|
+| `sensor_events` | Ruwe Zigbee sensor events (lokaal, 14 dagen retentie) |
+| `hourly_summary` | Uurlijkse aggregatie per device |
 
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| household_id | uuid | FK naar households |
-| api_key_hash | text | Hashed API key (bcrypt) |
-| last_seen | timestamp | Laatste heartbeat |
-| version | text | Software versie |
-| status | text | online, offline, degraded |
-
-### `gateway_health`
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| gateway_id | uuid | FK naar gateways |
-| recorded_at | timestamp | Meetmoment |
-| cpu_temp | float | CPU temperatuur (°C) |
-| cpu_usage | float | CPU gebruik (%) |
-| memory_usage | float | RAM gebruik (%) |
-| disk_usage | float | Disk gebruik (%) |
-| uptime_seconds | int | Uptime in seconden |
-| zigbee_devices | int | Aantal gekoppelde devices |
-| mqtt_connected | boolean | MQTT broker status |
-
-### `daily_summaries`
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| household_id | uuid | FK naar households |
-| date | date | Datum |
-| first_activity | time | Eerste activiteit |
-| last_activity | time | Laatste activiteit |
-| total_events | int | Totaal events |
-| rooms_visited | jsonb | Array van bezochte kamers met counts |
-| anomaly_score | float | Afwijkingsscore (0-1) |
-| anomaly_flags | jsonb | Welke anomalieën gedetecteerd |
-
-### `alerts`
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| household_id | uuid | FK naar households |
-| type | text | no_activity, anomaly, battery_low |
-| severity | text | info, warning, critical |
-| message | text | Beschrijving |
-| acknowledged | boolean | Gezien door mantelzorger |
-| created_at | timestamp | Aanmaakdatum |
-
-### `organizations` (B2B)
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| name | text | Organisatie naam |
-| slug | text | URL-friendly naam |
-| contact_email | text | Contact email |
-| contact_phone | text | Contact telefoon |
-| address | jsonb | Adresgegevens |
-| settings | jsonb | Organisatie instellingen |
-| created_at | timestamp | Aanmaakdatum |
-
-### `rooms` (B2B)
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| organization_id | uuid | FK naar organizations |
-| name | text | Kamer naam |
-| floor | int | Verdieping |
-| resident_id | uuid | FK naar residents |
-| sensors | jsonb | Gekoppelde sensoren |
-| status | text | active, inactive |
-| created_at | timestamp | Aanmaakdatum |
-
-### `residents` (B2B)
-
-| Kolom | Type | Beschrijving |
-|-------|------|--------------|
-| id | uuid | Primary key |
-| organization_id | uuid | FK naar organizations |
-| first_name | text | Voornaam |
-| last_name | text | Achternaam |
-| room_id | uuid | FK naar rooms |
-| date_of_birth | date | Geboortedatum |
-| notes | text | Notities |
-| emergency_contacts | jsonb | Noodcontacten |
-| created_at | timestamp | Aanmaakdatum |
-
----
-
-## Row Level Security (RLS)
-
-Alle tabellen hebben RLS policies:
-
-- **households:** Alleen leden van het huishouden
-- **organizations:** Alleen medewerkers van de organisatie
-- **alerts:** Alleen voor eigen household/organization
-- **gateways:** Alleen eigenaar household
+De lokale database houdt de ruwe data. Alleen aggregaties worden naar Supabase gesynchroniseerd.

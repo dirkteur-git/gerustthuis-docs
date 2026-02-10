@@ -241,6 +241,8 @@ CREATE TABLE daily_activity_stats (
     longest_gap_minutes   INTEGER DEFAULT 0,       -- Langste gap tussen events
     night_events          INTEGER DEFAULT 0,       -- Events 23:00-06:00
     night_active_hours    INTEGER DEFAULT 0,       -- Actieve uren 23:00-06:00
+    motion_events         INTEGER DEFAULT 0,       -- Bewegingssensor events (migratie 020)
+    door_events           INTEGER DEFAULT 0,       -- Deur/contact sensor events (migratie 020)
     created_at            TIMESTAMPTZ DEFAULT NOW(),
     updated_at            TIMESTAMPTZ DEFAULT NOW(),
 
@@ -263,6 +265,8 @@ CREATE INDEX idx_daily_activity_stats_date ON daily_activity_stats(date DESC);
 | `longest_gap_minutes` | Langste periode zonder events tussen first en last activity |
 | `night_events` | Events tussen 23:00-06:00 |
 | `night_active_hours` | Uren met activiteit tussen 23:00-06:00 |
+| `motion_events` | Bewegingssensor events (device_type = motion_sensor) |
+| `door_events` | Deur/contact sensor events (device_type = contact_sensor) |
 
 **Wordt bijgewerkt door:** `calculate_daily_activity_stats()` functie
 
@@ -642,6 +646,7 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 14. `017_populate_aggregated_data.sql` - Vul aggregatie tabellen + fix RLS
 15. `018_remove_superadmin.sql` - Verwijder superadmin logica uit functies, policies, triggers
 16. `019_aggregation_cron_jobs.sql` - pg_cron jobs voor uurlijkse aggregatie (room_activity_hourly + daily_activity_stats)
+17. `020_expand_daily_stats.sql` - Voegt motion_events en door_events kolommen toe + update calculate functie
 
 ---
 
