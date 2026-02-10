@@ -1,168 +1,73 @@
 # GerustThuis Roadmap
 
-Geplande features en verbeteringen.
+Feature status en geplande verbeteringen.
+
+---
+
+## Afgerond
+
+### Multi-tenant RLS Policies ✓
+**Migraties:** 005, 007, 010-017
+- Household-based multi-tenancy via `get_accessible_config_ids()`
+- Elke user ziet alleen data van eigen huishouden
+- Superadmin (dirk@boostix.nl) kan alle huishoudens bekijken
+
+### Patronen.vue ✓
+**Status:** Live in productie
+- Dagritme analyse (gemiddeld uurpatroon, opstaan/bedtijd)
+- Vandaag vs normaal vergelijking (5 metrics met severity badges)
+- Weekpatroon analyse (activiteit per weekdag)
+- Trends (sparklines voor events, actieve uren, nachtactiviteit)
+
+### Households & Multi-tenancy ✓
+**Migraties:** 009-013
+- User profiles met active_household_id
+- Household members met roles (admin/viewer)
+- Automatische household aanmaak bij signup
+- Uitnodigingssysteem (AcceptInvitation.vue)
+
+### Superadmin ✓
+**Migratie:** 014
+- dirk@boostix.nl als global admin
+- Gebruikers tab in Instellingen (alle users/households)
+- Household switcher
+
+### Data Pipeline ✓
+**Migraties:** 015-017
+- Auto-link hue_config aan household via trigger
+- room_activity_hourly en daily_activity_stats aggregatie
+- Correcte RLS policies op alle tabellen
 
 ---
 
 ## Prioriteit: Hoog
 
 ### 1. Auto-Refresh Dashboard
-
-**Status:** Nog niet geïmplementeerd
-**Impact:** Gebruikers zien verouderde data
-
-**Probleem:**
-Dashboard laadt data één keer bij mount en ververst nooit.
-
-**Oplossing:**
-```javascript
-// Dashboard.vue
-let refreshInterval = null
-
-onMounted(async () => {
-  await refreshAllData()
-  refreshInterval = setInterval(refreshAllData, 5 * 60 * 1000)
-})
-
-onUnmounted(() => {
-  if (refreshInterval) clearInterval(refreshInterval)
-})
-```
-
-**Onderdelen:**
-- [ ] Polling interval (5 min) toevoegen
+Dashboard laadt data één keer bij mount. Toevoegen:
+- [ ] Polling interval (5 min)
 - [ ] Handmatige refresh knop
 - [ ] "Laatste update: X min geleden" indicator
-- [ ] Loading state tijdens refresh
 
-**Alternatief:** Supabase Realtime subscriptions (vereist Realtime inschakelen)
-
----
-
-### 2. Multi-tenant RLS Policies
-
-**Status:** Security issue - alle users zien alle data
-**Impact:** Privacy risico bij meerdere gebruikers
-
-**Huidige situatie:**
-```sql
--- Alle authenticated users kunnen alles zien
-USING (true)
-```
-
-**Gewenste situatie:**
-```sql
--- Users zien alleen eigen data
-USING (config_id IN (
-  SELECT hc.id FROM hue_config hc
-  WHERE hc.user_email = auth.jwt()->>'email'
-))
-```
-
-**Onderdelen:**
-- [ ] RLS policies updaten voor hue_devices
-- [ ] RLS policies updaten voor physical_devices
-- [ ] RLS policies updaten voor raw_events
-- [ ] RLS policies updaten voor room_activity_hourly
-- [ ] Testen met meerdere accounts
+### 2. Alert Systeem
+- [ ] Inactiviteitsalarm (geen beweging > X uur)
+- [ ] Nachtelijke onrust detectie
+- [ ] Email/push notificaties
+- [ ] Quiet hours configuratie
 
 ---
 
 ## Prioriteit: Medium
 
-### 3. Placeholder Views Invullen
+### 3. Low Battery Notificaties
+- [ ] Alert bij batterij < 20%
+- [ ] UI indicator voor low battery devices
+- [ ] Email notificatie (optioneel)
 
-**Status.vue - Real-time Status**
-- [ ] Laatste activiteit per kamer
-- [ ] Huidige sensor states (motion, deuren)
-- [ ] Lampen die aan staan
-- [ ] Batterij waarschuwingen
-
-**Woning.vue - Configuratie**
+### 4. Woning.vue Uitbreiden
 - [ ] Kamers beheren (namen, verdiepingen)
 - [ ] Sensoren toewijzen aan kamers
 - [ ] Device hernoemen
 - [ ] Inactieve devices verbergen
-
-**Patronen.vue - Afwijkingsdetectie**
-- [ ] Dagpatroon visualisatie (normaal vs vandaag)
-- [ ] Z-score berekening voor afwijkingen
-- [ ] Alert configuratie (geen beweging > X uur)
-- [ ] Historische vergelijking (week/maand)
-
----
-
-### 4. Low Battery Notificaties
-
-**Status:** Battery wordt gepolled, maar geen alerting
-**Impact:** Gebruikers merken lege batterijen te laat
-
-**Onderdelen:**
-- [ ] Alert tabel toevoegen voor batterij waarschuwingen
-- [ ] Threshold configureerbaar (default: 20%)
-- [ ] UI indicator voor low battery devices
-- [ ] Email notificatie (optioneel)
-
----
-
-### 5. Event Retentie Verduidelijken
-
-**Status:** Cleanup is 90 dagen, maar draait wekelijks
-**Impact:** Events kunnen 90-97 dagen oud zijn
-
-**Opties:**
-1. Dagelijkse cleanup (consistent 90 dagen)
-2. Documentatie updaten (90-97 dagen)
-3. Configureerbare retentie periode
-
----
-
-## Prioriteit: Laag
-
-### 6. Real-time Subscriptions
-
-**Status:** Niet geïmplementeerd
-**Impact:** Zou polling kunnen vervangen
-
-**Voordelen:**
-- Instant updates bij state changes
-- Minder database load dan polling
-- Betere UX
-
-**Nadelen:**
-- Vereist Supabase Realtime (extra kosten)
-- Complexere error handling
-- Fallback naar polling nodig
-
-**Implementatie:**
-```javascript
-const channel = supabase
-  .channel('room-activity')
-  .on('postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'room_activity_hourly' },
-    () => loadHeatmapData()
-  )
-  .subscribe()
-```
-
----
-
-### 7. gerustthuis-cloud Migratie
-
-**Status:** Code in cloud die niet in portaal zit
-**Impact:** Waardevolle features niet beschikbaar
-
-**Te migreren:**
-- [ ] Patronen.vue (15-dimensionale anomalie detectie)
-- [ ] Alert systeem (4 types + quiet hours)
-- [ ] Pro Dashboard (zorginstellingen)
-- [ ] Bewoners beheer
-- [ ] Contact sensoren v2 API support
-
-**Aanpak:**
-1. Feature-by-feature migreren
-2. Database schema uitbreiden waar nodig
-3. Testen met bestaande data
 
 ---
 
@@ -170,20 +75,27 @@ const channel = supabase
 
 - [ ] PWA support (offline viewing)
 - [ ] Dark mode
-- [ ] Multi-language (EN/DE)
 - [ ] Export naar CSV/PDF
-- [ ] Historische trends (maand/jaar view)
-- [ ] Vergelijking met vorige week
+- [ ] Real-time Supabase subscriptions
 - [ ] Push notificaties (browser)
-- [ ] 2FA voor login
-- [ ] Audit log voor data access
+- [ ] Seizoensaanpassing patroonherkenning
 
 ---
 
 ## Changelog
 
-### v0.1.0 (Huidig)
+### v0.3.0 (Huidig - feb 2026)
+- Patronen pagina live (dagritme, trends, vergelijking)
+- Household-based multi-tenancy
+- Superadmin functionaliteit
+- Data pipeline fixes (migraties 015-017)
+
+### v0.2.0 (jan 2026)
+- Analyse pagina (Z-score anomaly detection)
+- Daily activity stats aggregatie
+- Hue OAuth integratie verbeterd
+
+### v0.1.0 (dec 2025)
 - Basis dashboard met heatmap
 - Hue OAuth integratie
 - Sensor health monitoring
-- 7-dagen activiteit overzicht

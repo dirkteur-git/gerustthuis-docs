@@ -558,13 +558,71 @@ LIMIT 100;
 
 ---
 
+## Households & Multi-tenancy
+
+### Tabellen
+
+**households**
+| Kolom | Type | Beschrijving |
+|-------|------|--------------|
+| id | UUID | Primary key |
+| name | TEXT | Huishouden naam |
+| config_id | UUID | FK naar hue_config (gekoppelde Bridge) |
+| created_at | TIMESTAMPTZ | Aangemaakt |
+
+**household_members**
+| Kolom | Type | Beschrijving |
+|-------|------|--------------|
+| id | UUID | Primary key |
+| household_id | UUID | FK naar households |
+| user_id | UUID | FK naar auth.users |
+| role | TEXT | admin / viewer |
+| invited_by | UUID | Uitgenodigd door |
+| joined_at | TIMESTAMPTZ | Lid geworden |
+
+**user_profiles**
+| Kolom | Type | Beschrijving |
+|-------|------|--------------|
+| id | UUID | PK = auth.users.id |
+| display_name | TEXT | Weergavenaam |
+| active_household_id | UUID | Actief huishouden |
+| created_at | TIMESTAMPTZ | Aangemaakt |
+
+### Access Control: `get_accessible_config_ids()`
+
+Centrale SQL functie die bepaalt welke hue_config IDs een user mag zien:
+
+```sql
+-- Stap 1: Check households via household_members
+-- Stap 2: Fallback op directe hue_config.user_email match
+-- Stap 3: Superadmin (dirk@boostix.nl) ziet alles
+```
+
+Alle RLS policies gebruiken: `config_id IN (SELECT get_accessible_config_ids())`
+
+---
+
 ## Migratie Bestanden
 
 SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 
-1. `004_room_activity_hourly_table.sql` - room_activity tabel + room_activity_hourly view
-2. `005_rls_policies.sql` - Row Level Security policies
-3. `006_daily_activity_stats.sql` - daily_activity_stats tabel + berekeningsfuncties
+1. `001_initial_schema.sql` - Basis tabellen (hue_config, hue_devices, activity_events, room_activity)
+2. `002_cron_jobs.sql` - Cron jobs voor polling
+3. `003_room_activity_aggregation.sql` - Room activity aggregatie functies
+4. `004_room_activity_hourly_table.sql` - room_activity_hourly tabel + aggregate functie
+5. `005_rls_policies.sql` - Row Level Security policies
+6. `006_daily_activity_stats.sql` - daily_activity_stats tabel + berekeningsfuncties
+7. `007_sensor_health.sql` - Sensor health monitoring
+8. `008_physical_devices.sql` - Physical devices groepering
+9. `009_user_profiles.sql` - User profiles tabel
+10. `010_households.sql` - Households multi-tenancy
+11. `011_households_v2.sql` - Households verbeteringen
+12. `012_clean_rebuild_auth_households.sql` - Auth en households rebuild
+13. `013_fix_signup_trigger.sql` - Fix signup trigger
+14. `014_superadmin_user_profiles.sql` - Superadmin RLS op user_profiles
+15. `015_link_config_to_household.sql` - Auto-link hue_config aan household
+16. `016_fix_missing_tables.sql` - Herstel room_activity_hourly + RLS
+17. `017_populate_aggregated_data.sql` - Vul aggregatie tabellen + fix RLS
 
 ---
 

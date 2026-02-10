@@ -69,15 +69,18 @@ gerustthuis-portaal/
 │   ├── style.css               # Tailwind imports
 │   ├── services/
 │   │   └── supabase.js         # Database client + helpers
+│   ├── composables/
+│   │   └── useDataQuality.js   # Gedeelde berekeningen
 │   └── views/
 │       ├── Dashboard.vue       # Heatmap overzicht
 │       ├── Login.vue           # Login/registratie
-│       ├── Status.vue          # (placeholder)
-│       ├── Woning.vue          # (placeholder)
-│       ├── Patronen.vue        # (placeholder)
+│       ├── Woning.vue          # Kamers en devices
+│       ├── Patronen.vue        # Patroonherkenning (dagritme, trends)
+│       ├── Analyse.vue         # Anomaly detection (Z-scores)
 │       ├── Instellingen.vue    # Integraties beheer
 │       ├── HueConnect.vue      # Hue OAuth start
-│       └── HueCallback.vue     # Hue OAuth callback
+│       ├── HueCallback.vue     # Hue OAuth callback
+│       └── AcceptInvitation.vue # Uitnodiging accepteren
 ├── public/
 ├── index.html
 ├── vite.config.js
@@ -288,7 +291,7 @@ export async function getDevicesByRoom(roomName)
 // Recente events met device info
 export async function getRecentEvents(limit = 50)
 // Query: SELECT *, hue_devices(name, device_type, room_name)
-//        FROM raw_events ORDER BY recorded_at DESC LIMIT 50
+//        FROM activity_events ORDER BY recorded_at DESC LIMIT 50
 ```
 
 ---
@@ -313,7 +316,7 @@ export async function getRecentEvents(limit = 50)
 | `hue_devices` | Dashboard (rooms, contact sensors) |
 | `physical_devices` | Dashboard (motion sensor health) |
 | `room_activity_hourly` | Dashboard (heatmap) |
-| `raw_events` | (beschikbaar via getRecentEvents, nog niet in UI) |
+| `activity_events` | (beschikbaar via getRecentEvents, nog niet in UI) |
 
 ---
 
@@ -419,21 +422,22 @@ onUnmounted(() => {
 })
 ```
 
-### 2. Placeholder Views
+### Geïmplementeerde Views
 
-De volgende views zijn nog niet geïmplementeerd:
+Alle views zijn geïmplementeerd:
 
-| View | Geplande functie |
-|------|------------------|
-| `Status.vue` | Real-time overzicht: welke kamers actief, laatste beweging per kamer, lampen status |
-| `Woning.vue` | Kamer configuratie: sensoren toewijzen, namen aanpassen, verdiepingen indelen |
-| `Patronen.vue` | Afwijkingsdetectie: dagpatronen analyseren, alerts bij ongebruikelijke activiteit |
+| View | Functie |
+|------|---------|
+| `Dashboard.vue` | 7-dagen heatmap, dagstatistieken, recente activiteit, offline sensoren |
+| `Patronen.vue` | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
+| `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur |
+| `Woning.vue` | Kamers overzicht, devices per kamer, activiteit per kamer |
+| `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers (superadmin) |
+| `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
 
-Zie [ROADMAP.md](ROADMAP.md) voor planning.
+### Multi-tenant (geïmplementeerd)
 
-### 3. Geen Multi-tenant
-
-Alle gebruikers zien alle data (RLS policies zijn `USING (true)` voor authenticated users).
+Household-based multi-tenancy via `get_accessible_config_ids()`. Elke user ziet alleen data van eigen huishouden. Superadmin (dirk@boostix.nl) kan alle huishoudens bekijken.
 
 ---
 
@@ -453,12 +457,13 @@ VITE_HUE_CLIENT_ID=xxx
 |-------|------|---------------|
 | `/login` | Login.vue | Nee |
 | `/` | Dashboard.vue | Ja |
-| `/status` | Status.vue | Ja |
 | `/patronen` | Patronen.vue | Ja |
+| `/analyse` | Analyse.vue | Ja |
 | `/woning` | Woning.vue | Ja |
 | `/instellingen` | Instellingen.vue | Ja |
 | `/hue` | HueConnect.vue | Ja |
 | `/hue/callback` | HueCallback.vue | Ja |
+| `/uitnodiging/:token` | AcceptInvitation.vue | Nee |
 
 **Route guard in router.js:**
 ```javascript

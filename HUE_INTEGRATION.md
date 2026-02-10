@@ -369,7 +369,7 @@ Flow:
    b. Fetch lights, sensors, groups van Hue API
    c. Fetch contact sensors via v2 API
    d. Vergelijk state met last_state in database
-   e. Bij verschil: insert in raw_events
+   e. Bij verschil: insert in activity_events
    f. Update hue_devices.last_state
 3. Groepeer multi-capability sensors
 4. Update last_sync_at

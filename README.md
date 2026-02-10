@@ -6,35 +6,35 @@ Centrale documentatie voor het GerustThuis ecosysteem.
 
 | Repository | Beschrijving |
 |------------|--------------|
+| [gerustthuis-portaal](https://github.com/dirkteur-git/gerustthuis-portaal) | Vue 3 dashboard app (activiteit, patronen, instellingen) |
+| [gerustthuis-supabase](https://github.com/dirkteur-git/gerustthuis-supabase) | Database migraties en Supabase Edge Functions |
 | [gerustthuis-website](https://github.com/dirkteur-git/gerustthuis-website) | Marketing website (particulier + zakelijk) |
-| [gerustthuis-cloud](https://github.com/dirkteur-git/gerustthuis-cloud) | Dashboards, API, Supabase backend |
-| [gerustthuis-device](https://github.com/dirkteur-git/gerustthuis-device) | Raspberry Pi gateway software |
-| [gerustthuis-docs](https://github.com/dirkteur-git/gerustthuis-docs) | Deze repository |
+| [gerustthuis-docs](https://github.com/dirkteur-git/gerustthuis-docs) | Deze repository - documentatie en brandbook |
+| [gerustthuis-projectplan](https://github.com/dirkteur-git/gerustthuis-projectplan) | Intern projectplan (10 fasen) |
 
-## Documentatie Structuur
+## Documentatie
 
-```
-docs/
-├── overview/           # Project overzicht en architectuur
-├── hardware/           # Sensoren en Raspberry Pi setup
-├── database/           # Database schemas (SQLite + Supabase)
-└── deployment/         # Deployment handleidingen
-```
-
-## Quick Links
-
-- [Architectuur Overzicht](docs/overview/architecture.md)
-- [Data Flow](docs/overview/data-flow.md)
-- [Sensor Specificaties](docs/hardware/sensors.md)
-- [Database Schema](docs/database/schema.md)
+| Document | Beschrijving |
+|----------|--------------|
+| [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | Database schema, tabellen, RLS policies |
+| [PORTAAL_ARCHITECTURE.md](PORTAAL_ARCHITECTURE.md) | Frontend architectuur en views |
+| [HUE_INTEGRATION.md](HUE_INTEGRATION.md) | Philips Hue API integratie |
+| [ANOMALY_DETECTION.md](ANOMALY_DETECTION.md) | Patroonherkenning en anomaly detection |
+| [ROADMAP.md](ROADMAP.md) | Feature roadmap en backlog |
+| [Brandbook.md](Brandbook.md) | Huisstijl en branding |
 
 ## Over GerustThuis
 
-GerustThuis is een AI-powered thuismonitoringsysteem voor ouderen en hun mantelzorgers. Het systeem detecteert activiteitspatronen via sensoren en waarschuwt mantelzorgers bij afwijkingen, zonder camera's of microfoons.
+GerustThuis is een AI-powered thuismonitoringsysteem voor ouderen en hun mantelzorgers. Het systeem detecteert activiteitspatronen via Philips Hue sensoren en waarschuwt mantelzorgers bij afwijkingen, zonder camera's of microfoons.
+
+### Architectuur
+
+```
+Philips Hue Bridge → Supabase Edge Functions (polling) → PostgreSQL → Vue 3 Portaal
+```
 
 ### Privacy-first Design
 
-- Ruwe bewegingsdata blijft lokaal op de Raspberry Pi
-- Alleen samenvattingen gaan naar de cloud
 - Geen camera's of microfoons
-- Mantelzorger ziet alleen alerts, niet exacte bewegingen
+- Data per huishouden geïsoleerd via Row Level Security
+- Mantelzorger ziet patronen en afwijkingen, niet exacte bewegingen

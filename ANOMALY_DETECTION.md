@@ -2,7 +2,7 @@
 
 Documentatie over het patroonherkenningssysteem in GerustThuis.
 
-**Laatst bijgewerkt:** 2026-01-31
+**Laatst bijgewerkt:** 2026-02-10
 
 ---
 
@@ -194,7 +194,7 @@ const buildDayVector = (stats) => {
 }
 ```
 
-### `dag_vectors` (optioneel, voor caching)
+### `dag_vectors` (niet geïmplementeerd - toekomstig)
 
 Pre-computed vectoren voor snellere queries:
 
@@ -208,7 +208,7 @@ CREATE TABLE dag_vectors (
 );
 ```
 
-### `uur_verwachtingen`
+### `uur_verwachtingen` (niet geïmplementeerd - toekomstig)
 
 Verwachte waarden per uur van de dag:
 
@@ -226,7 +226,7 @@ CREATE TABLE uur_verwachtingen (
 
 ---
 
-## RPC Functie: `check_nu`
+## RPC Functie: `check_nu` (niet geïmplementeerd - toekomstig)
 
 Real-time anomaly check:
 
@@ -287,6 +287,14 @@ De huidige **z-score benadering** is:
 | Data | `activity_events` tabel | Ruwe events voor device-type analyse |
 | Functie | `calculate_daily_activity_stats()` | Berekent dagelijkse stats |
 | View | `room_activity_hourly` | Uurlijkse aggregatie per kamer |
+
+### Huidige Frontend Implementatie
+
+| Component | Locatie | Beschrijving |
+|-----------|---------|--------------|
+| Analyse | `gerustthuis-portaal/src/views/Analyse.vue` | Z-score anomaly detection per dag, score breakdown |
+| Patronen | `gerustthuis-portaal/src/views/Patronen.vue` | Dagritme, vandaag vs normaal, weekpatroon, trends |
+| Utilities | `gerustthuis-portaal/src/composables/useDataQuality.js` | Gedeelde berekeningen (dayStart, dayEvents, avg, stddev) |
 
 ---
 
