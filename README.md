@@ -9,6 +9,7 @@ Centrale documentatie voor het GerustThuis ecosysteem.
 | [gerustthuis-portaal](https://github.com/dirkteur-git/gerustthuis-portaal) | Vue 3 dashboard app (activiteit, patronen, instellingen) |
 | [gerustthuis-supabase](https://github.com/dirkteur-git/gerustthuis-supabase) | Database migraties en Supabase Edge Functions |
 | [gerustthuis-website](https://github.com/dirkteur-git/gerustthuis-website) | Marketing website (particulier + zakelijk) |
+| [gerustthuis-app](https://github.com/dirkteur-git/gerustthuis-app) | React Native + Expo iOS app voor mantelzorgers |
 | [gerustthuis-docs](https://github.com/dirkteur-git/gerustthuis-docs) | Deze repository - documentatie en brandbook |
 | [gerustthuis-projectplan](https://github.com/dirkteur-git/gerustthuis-projectplan) | Intern projectplan (10 fasen) |
 
@@ -16,6 +17,7 @@ Centrale documentatie voor het GerustThuis ecosysteem.
 
 | Document | Beschrijving |
 |----------|--------------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Systeemarchitectuur en componenten overzicht |
 | [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | Database schema, tabellen, RLS policies |
 | [PORTAAL_ARCHITECTURE.md](PORTAAL_ARCHITECTURE.md) | Frontend architectuur en views |
 | [HUE_INTEGRATION.md](HUE_INTEGRATION.md) | Philips Hue API integratie |

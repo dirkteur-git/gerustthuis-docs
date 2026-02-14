@@ -7,7 +7,7 @@ Feature status en geplande verbeteringen.
 ## Afgerond
 
 ### Multi-tenant RLS Policies ✓
-**Migraties:** 005, 007, 010-017
+**Migraties:** 005, 007, 010-018
 - Household-based multi-tenancy via `get_accessible_config_ids()`
 - Elke user ziet alleen data van eigen huishouden
 
@@ -26,7 +26,7 @@ Feature status en geplande verbeteringen.
 - Uitnodigingssysteem (AcceptInvitation.vue)
 
 ### Data Pipeline ✓
-**Migraties:** 015-017
+**Migraties:** 015-020
 - Auto-link hue_config aan household via trigger
 - room_activity_hourly en daily_activity_stats aggregatie
 - Correcte RLS policies op alle tabellen
@@ -40,6 +40,27 @@ Feature status en geplande verbeteringen.
 - Hardcoded dirk@boostix.nl logica verwijderd uit alle functies en policies
 - `is_superadmin` kolom verwijderd van user_profiles
 - Alle users gaan nu via standaard household-based access control
+
+### Aggregatie Automatisering ✓
+**Migratie:** 019
+- pg_cron jobs voor automatische uurlijkse aggregatie
+- `aggregate-hourly-activity` (room_activity → room_activity_hourly)
+- `refresh-daily-stats` (herberekent daily_activity_stats)
+
+### Sensor Type Tracking ✓
+**Migratie:** 020
+- motion_events en door_events kolommen op daily_activity_stats
+- Onderscheid tussen bewegings- en deursensor events
+
+### 18-Feature Anomaly Detection ✓
+- Uitgebreid van 6 naar 18 features in 6 groepen
+- Rolling vergelijking (vandaag tot huidig uur vs baseline)
+- Z-score gebaseerde status banner op Dashboard
+
+### iOS App ✓
+- React Native + Expo iOS app voor mantelzorgers
+- "Geen bericht = goed bericht" filosofie
+- Setup flow met Hue koppeling
 
 ---
 
@@ -88,6 +109,10 @@ Feature status en geplande verbeteringen.
 - Data pipeline fixes (migraties 015-017)
 - Superadmin verwijderd (migratie 018)
 - Auto-refresh op Dashboard (elke 5 minuten)
+- Aggregatie automatisering via pg_cron (migratie 019)
+- Motion/door events tracking (migratie 020)
+- 18-feature anomaly detection met rolling vergelijking
+- iOS app (React Native + Expo)
 
 ### v0.2.0 (jan 2026)
 - Analyse pagina (Z-score anomaly detection)

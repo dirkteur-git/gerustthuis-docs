@@ -39,8 +39,7 @@ TypeScript Edge Functions die elke 5 minuten draaien:
 
 | Function | Schedule | Beschrijving |
 |----------|----------|--------------|
-| `hue-poll-state` | `*/5 * * * *` | Poll alle devices, detecteer state changes, schrijf naar activity_events en room_activity |
-| `hue-poll-battery` | `0 * * * *` | Batterij levels monitoren |
+| `hue-sync-state` | `*/5 * * * *` | Synchroniseer alle device states, detecteer changes, schrijf naar activity_events en room_activity |
 | `hue-token-exchange` | On-demand | OAuth token exchange bij Hue koppeling |
 
 **Locatie:** `gerustthuis-supabase/functions/`
@@ -59,6 +58,7 @@ Alle data wordt opgeslagen in Supabase PostgreSQL met Row Level Security.
 - `physical_devices` - Gegroepeerde fysieke sensoren
 - `activity_events` - Ruwe sensor events (append-only)
 - `room_activity` - 5-minuten aggregaties per kamer
+- `room_activity_hourly` - Uurlijkse aggregatie per kamer (TABLE met RLS)
 - `daily_activity_stats` - Dagelijkse statistieken
 - `households` - Multi-tenant huishoudens
 - `household_members` - Gebruikersrollen per huishouden
@@ -70,7 +70,7 @@ Zie [DATABASE_DESIGN.md](DATABASE_DESIGN.md) voor volledig schema.
 
 Dashboard applicatie voor mantelzorgers.
 
-**Tech stack:** Vue 3, Vite, Tailwind CSS, Supabase JS client
+**Tech stack:** Vue 3, Vite, Tailwind CSS v3, Supabase JS client
 
 **Views:**
 - Dashboard - 7-dagen heatmap, status banner, recente activiteit
@@ -78,6 +78,10 @@ Dashboard applicatie voor mantelzorgers.
 - Analyse - Developer view met z-score anomaly detection
 - Woning - Kamers en devices overzicht
 - Instellingen - Hue koppeling, huishouden beheer
+- HueConnect - Hue Bridge koppeling starten
+- HueCallback - OAuth callback na Hue autorisatie
+- AcceptInvitation - Uitnodiging accepteren voor huishouden
+- Login - Inlogpagina
 
 Zie [PORTAAL_ARCHITECTURE.md](PORTAAL_ARCHITECTURE.md) voor frontend details.
 
@@ -89,6 +93,22 @@ Vue 3 marketing website op apart domein.
 
 **Locatie:** `gerustthuis-website/`
 
+### 6. Projectplan Applicatie
+
+Vue 3 projectplan applicatie met 10 fasen.
+
+**Tech stack:** Vue 3, Vite
+
+**Locatie:** `gerustthuis-projectplan/`
+
+### 7. iOS App (Mantelzorgers)
+
+React Native + Expo iOS app voor mantelzorgers.
+
+**Tech stack:** React Native, Expo SDK 54, TypeScript, Expo Router, Zustand
+
+**Locatie:** `gerustthuis-app/`
+
 ---
 
 ## Data Flow
@@ -97,7 +117,7 @@ Vue 3 marketing website op apart domein.
 Hue Bridge (v1 + v2 API)
     │
     ▼
-hue-poll-state (elke 5 min)
+hue-sync-state (elke 5 min)
     │
     ├──► hue_devices.last_state (UPDATE - alleen bij change)
     │
@@ -107,12 +127,12 @@ hue-poll-state (elke 5 min)
     └──► room_activity (UPSERT per 5-min window)
                   │
                   ▼
-         room_activity_hourly (VIEW - groepeert per uur)
+         room_activity_hourly (TABLE - gevuld door pg_cron)
                   │
                   ▼
          Dashboard heatmap (7 dagen)
 
-daily_activity_stats (berekend door calculate_daily_activity_stats())
+daily_activity_stats (berekend door pg_cron via calculate_daily_activity_stats())
          │
          ▼
     Patronen + Analyse views

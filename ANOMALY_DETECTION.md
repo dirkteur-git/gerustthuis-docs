@@ -2,7 +2,7 @@
 
 Documentatie over het patroonherkenningssysteem in GerustThuis.
 
-**Laatst bijgewerkt:** 2026-02-10
+**Laatst bijgewerkt:** 2026-02-14
 
 ---
 
@@ -296,8 +296,8 @@ CREATE TABLE room_activity_hourly (
 |-----------|---------|--------------|
 | **Analyse.vue** | `src/views/Analyse.vue` | Z-score anomaly detection met 18 features in 6 groepen. Developer view met gegroepeerde score breakdown, baseline statistieken, data quality check, events per uur bar chart, en raw data JSON view. |
 | **Patronen.vue** | `src/views/Patronen.vue` | Gebruikersvriendelijke patroonanalyse: dagritme, vandaag vs normaal (5 metrics met severity badges), weekpatroon, trends (sparklines). |
-| **Dashboard.vue** | `src/views/Dashboard.vue` | Status banner met simpele ratio-check. Geen z-scores. |
-| **useDataQuality.js** | `src/composables/useDataQuality.js` | Gedeelde utilities: `calculateDayStart()`, `avg()`, `stddev()`, `timeToMinutes()`, `sumEventsInRange()`, `cosineSimilarity()`, `awakeDuration()`, constanten. |
+| **Dashboard.vue** | `src/views/Dashboard.vue` | Status banner met z-score-gebaseerde status detectie en rolling vergelijking tot huidig uur. |
+| **useDataQuality.js** | `src/composables/useDataQuality.js` | Gedeelde utilities: `calculateDayStart()`, `getDayEvents()`, `getDayEventsUntilHour()`, `getActiveDayHours()`, `getActiveDayHoursUntilHour()`, `isNightHour()`, `formatMinutesToTime()`, `timeToMinutes()`, `toLocalDateKey()`, `avg()`, `stddev()`, `sumEventsInRange()`, `cosineSimilarity()`, `awakeDuration()`. Constanten: `MINIMUM_DAYS_REQUIRED`, `DAY_START_HOUR`, `NIGHT_START_HOUR`, `NIGHT_END_HOUR`. |
 
 ---
 

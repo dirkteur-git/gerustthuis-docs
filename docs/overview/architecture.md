@@ -15,7 +15,7 @@ Philips Hue Bridge
       ▼
 ┌─────────────────────────────────────┐
 │   Supabase Edge Functions           │
-│   (hue-poll-state, elke 5 min)     │
+│   (hue-sync-state, elke 5 min)     │
 │   - Hue v1 + v2 API polling        │
 │   - State change detection          │
 │   - Token refresh                   │
@@ -36,6 +36,13 @@ Philips Hue Bridge
 │   - Dashboard (heatmap, status)     │
 │   - Patronen (dagritme, trends)     │
 │   - Analyse (z-score anomaly)       │
+└─────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│   iOS App (Expo)                    │
+│   - StatusCard (normaal/afwijkend)  │
+│   - Push notificaties               │
 └─────────────────────────────────────┘
             │
             ▼

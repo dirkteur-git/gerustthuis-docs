@@ -2,7 +2,7 @@
 
 Actuele database structuur in Supabase (gerustthuis-supabase).
 
-**Laatst bijgewerkt:** 2026-02-10
+**Laatst bijgewerkt:** 2026-02-14
 
 ---
 
@@ -31,7 +31,7 @@ Actuele database structuur in Supabase (gerustthuis-supabase).
          │          │
          │  ┌───────▼────────────┐
          └─>│room_activity_hourly│
-            │      (view)        │
+            │     (table)        │
             └────────────────────┘
 ```
 
@@ -220,7 +220,7 @@ CREATE INDEX idx_room_activity_room ON room_activity(room_name);
 - `trigger_count` telt het aantal events in dat window
 - Wordt realtime bijgewerkt door `hue-sync-state` Edge Function
 
-**Wordt gebruikt voor:** Dashboard heatmap via `room_activity_hourly` view
+**Wordt gebruikt voor:** Dashboard heatmap via `room_activity_hourly` tabel
 
 ---
 
@@ -231,8 +231,8 @@ CREATE TABLE daily_activity_stats (
     id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     config_id             UUID NOT NULL REFERENCES hue_config(id) ON DELETE CASCADE,
     date                  DATE NOT NULL,
-    first_activity        TIME,                    -- Tijdstip eerste event
-    last_activity         TIME,                    -- Tijdstip laatste event
+    first_activity        TEXT,                    -- Tijdstip eerste event (HH:MM:SS formaat)
+    last_activity         TEXT,                    -- Tijdstip laatste event (HH:MM:SS formaat)
     total_events          INTEGER DEFAULT 0,       -- Totaal aantal events
     events_per_hour       INTEGER[],               -- Array met counts per uur (24 elementen)
     active_hours          INTEGER DEFAULT 0,       -- Uren met ≥1 event
@@ -256,12 +256,12 @@ CREATE INDEX idx_daily_activity_stats_date ON daily_activity_stats(date DESC);
 **Kolom beschrijvingen:**
 | Kolom | Beschrijving |
 |-------|--------------|
-| `first_activity` | Tijdstip (TIME) van eerste event die dag |
-| `last_activity` | Tijdstip (TIME) van laatste event die dag |
+| `first_activity` | Tijdstip (TEXT, HH:MM:SS formaat) van eerste event die dag |
+| `last_activity` | Tijdstip (TEXT, HH:MM:SS formaat) van laatste event die dag |
 | `events_per_hour` | Array[24] met event counts per uur (index 0 = 00:00-01:00) |
 | `active_hours` | Aantal uren met minimaal 1 event |
 | `rooms_active` | Aantal unieke kamers met activiteit |
-| `rooms_available` | Totaal aantal kamers met sensoren voor deze bewoner |
+| `rooms_available` | Aantal unieke kamers met sensoren (distinct room_names uit hue_devices) |
 | `longest_gap_minutes` | Langste periode zonder events tussen first en last activity |
 | `night_events` | Events tussen 23:00-06:00 |
 | `night_active_hours` | Uren met activiteit tussen 23:00-06:00 |
@@ -272,26 +272,33 @@ CREATE INDEX idx_daily_activity_stats_date ON daily_activity_stats(date DESC);
 
 ---
 
-## Views
+## Tabellen (vervolg)
 
-### `room_activity_hourly` - Uurlijkse activiteit per kamer (RLS-enabled)
+### 7. `room_activity_hourly` - Uurlijkse aggregatie per kamer (TABLE)
 
 ```sql
-CREATE OR REPLACE VIEW room_activity_hourly AS
-SELECT
-    ra.config_id,
-    ra.room_name,
-    date_trunc('hour', ra.activity_window) AS hour,
-    COUNT(*) AS event_count,                    -- Elke 5-min window = 1 event
-    MAX(ra.last_trigger_at) AS last_event
-FROM room_activity ra
-JOIN hue_config hc ON ra.config_id = hc.id
-WHERE hc.user_email = auth.jwt() ->> 'email'   -- RLS filter op user
-GROUP BY ra.config_id, ra.room_name, date_trunc('hour', ra.activity_window)
-ORDER BY hour DESC, ra.room_name;
+CREATE TABLE room_activity_hourly (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    config_id       UUID NOT NULL REFERENCES hue_config(id) ON DELETE CASCADE,
+    room_name       TEXT NOT NULL,
+    hour            TIMESTAMPTZ NOT NULL,
+    motion_events   INTEGER DEFAULT 0,
+    door_events     INTEGER DEFAULT 0,
+    total_events    INTEGER DEFAULT 0,
+    updated_at      TIMESTAMPTZ DEFAULT NOW(),
+
+    UNIQUE(config_id, room_name, hour)
+);
 ```
 
-**Let op:** Gebruikt `COUNT(*)` zodat elke 5-minuten window als 1 event telt (niet SUM van trigger_count).
+**Let op:** Dit was oorspronkelijk een VIEW, maar is sinds migratie 016 omgebouwd naar een TABLE met:
+- Eigen RLS policies (via `get_accessible_config_ids()`)
+- `config_id` FK voor data isolatie
+- Wordt gevuld door `aggregate_hourly_activity()` via pg_cron
+
+---
+
+## Utility Queries
 
 ### `room_activity_daily` - Dagelijkse samenvatting
 
@@ -382,7 +389,7 @@ Events worden realtime geaggregeerd in `room_activity`:
 - Elke 5-minuten window wordt een aparte row
 - `trigger_types[]` bevat alle device types in dat window
 - `trigger_count` telt het aantal events
-- Dashboard view (`room_activity_hourly`) groepeert per uur en telt windows als events
+- `room_activity_hourly` tabel wordt elk uur gevuld door pg_cron via `aggregate_hourly_activity()`
 
 ---
 
@@ -459,12 +466,9 @@ CREATE POLICY "Users view own daily stats" ON daily_activity_stats
     ));
 ```
 
-### Views met RLS
+### room_activity_hourly RLS
 
-De `room_activity_hourly` view heeft een ingebouwde RLS filter:
-```sql
-WHERE hc.user_email = auth.jwt() ->> 'email'
-```
+De `room_activity_hourly` tabel heeft eigen RLS policies via `get_accessible_config_ids()`.
 
 Dit zorgt ervoor dat meerdere gebruikers dezelfde Hue bridge kunnen gebruiken zonder elkaars data te zien.
 
@@ -492,14 +496,13 @@ hue-sync-state (elke 5 min)
     └──► room_activity (UPSERT per 5-min window)
                   │
                   ▼
-         room_activity_hourly (VIEW - groepeert per uur)
+         room_activity_hourly (TABLE - uurlijkse aggregatie)
                   │
                   ▼
          Dashboard heatmap (7 dagen)
 ```
 
-**Realtime aggregatie:** Events worden direct geaggregeerd naar `room_activity`
-(geen aparte cron job nodig). De `room_activity_hourly` view groepeert on-the-fly.
+**Aggregatie:** room_activity wordt realtime bijgewerkt door hue-sync-state. room_activity_hourly wordt elk uur gevuld door pg_cron via aggregate_hourly_activity().
 
 ---
 
@@ -514,7 +517,7 @@ WHERE hour > NOW() - INTERVAL '7 days'
 ORDER BY hour DESC, room_name;
 ```
 
-> View filtert automatisch op ingelogde user via `auth.jwt() ->> 'email'`
+> Tabel heeft RLS policies via `get_accessible_config_ids()` voor automatische filtering per user
 
 ### Sensor health check
 
@@ -621,6 +624,27 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 ```
 
 Alle RLS policies gebruiken: `config_id IN (SELECT get_accessible_config_ids())`
+
+---
+
+## Automatische Aggregatie (pg_cron)
+
+Twee pg_cron jobs verwerken data automatisch:
+
+| Job | Schedule | Functie | Beschrijving |
+|-----|----------|---------|--------------|
+| `aggregate-hourly-activity` | `5 * * * *` | `aggregate_hourly_activity()` | Aggregeert room_activity naar room_activity_hourly (5 min na elk uur) |
+| `refresh-daily-stats` | `10 * * * *` | `refresh_daily_activity_stats()` | Herberekent daily_activity_stats (10 min na elk uur) |
+
+### `aggregate_hourly_activity()`
+
+Aggregeert `room_activity` (5-minuten windows) naar `room_activity_hourly` (per uur):
+
+```sql
+-- Groepeert room_activity per config_id, room_name, uur
+-- Telt motion_events en door_events apart
+-- UPSERT met ON CONFLICT DO UPDATE
+```
 
 ---
 

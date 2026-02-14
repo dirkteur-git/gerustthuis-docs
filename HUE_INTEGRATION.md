@@ -171,7 +171,7 @@ Token expired?
 | `error` | `active` | Volgende poll cycle refresh succesvol |
 | `expired` | `active` | Gebruiker doorloopt OAuth opnieuw |
 
-**Automatisch herstel:** Bij `error` status probeert de polling functie elke 5 minuten opnieuw te refreshen. Bij succes wordt status automatisch `active`. Gebruiker hoeft niets te doen tenzij bridge offline of credentials ingetrokken.
+**Let op:** Automatisch status herstel is nog niet volledig geïmplementeerd. De edge function update `hue_config.status` niet bij errors. Bij token refresh failure moet de gebruiker handmatig opnieuw koppelen via OAuth.
 
 ---
 
@@ -245,6 +245,8 @@ Token expired?
 }
 ```
 
+**Let op:** Temperature en light level sensoren worden aangemaakt bij device discovery, maar worden niet actief gemonitord voor state changes. Hun data wordt alleen verrijkt op het motion sensor record.
+
 ---
 
 ### Contact Sensoren (Deuren/Ramen)
@@ -252,6 +254,14 @@ Token expired?
 **API:** v2 CLIP `GET /route/clip/v2/resource/contact`
 
 **Waarom v2?** Contact sensoren worden niet correct herkend in v1 API.
+
+**V2 API headers:**
+```typescript
+headers: {
+  'Authorization': `Bearer ${accessToken}`,
+  'hue-application-key': bridgeUsername  // Vereist voor v2 CLIP API
+}
+```
 
 **Response structuur:**
 ```json
@@ -356,7 +366,7 @@ Input:  { code, user_email, user_id }
 Output: { success, config_id, bridge_username }
 ```
 
-### 2. `hue-poll-state`
+### 2. `hue-sync-state`
 
 **Trigger:** Cron elke 5 minuten (`*/5 * * * *`)
 **Doel:** Poll alle devices voor state changes
@@ -371,23 +381,28 @@ Flow:
    d. Vergelijk state met last_state in database
    e. Bij verschil: insert in activity_events
    f. Update hue_devices.last_state
+   g. Aggregeer naar room_activity per 5-min window via updateRoomActivity()
 3. Groepeer multi-capability sensors
 4. Update last_sync_at
 ```
 
-### 3. `hue-poll-battery`
+### Device Discovery
 
-**Trigger:** Cron elk uur (`0 * * * *`)
-**Doel:** Batterij levels monitoren
+De `hue-sync-state` edge function bevat automatische device discovery via `discoverDevices()`:
 
-```
-Flow:
-1. Laad actieve configs
-2. Fetch sensors
-3. Extract battery level uit sensor.config.battery
-4. Insert battery_update event
-5. Flag low battery (<20%)
-```
+**Wat wordt ontdekt:**
+- Lampen (lights) via v1 API
+- Motion sensoren via v1 API (type: ZLLPresence)
+- Contact sensoren via v2 CLIP API
+- Physical devices groepering op basis van MAC prefix
+
+**Flow:**
+1. Fetch alle lights, sensors (v1) en contact resources (v2)
+2. Voor elk device: check of het al bestaat in `hue_devices` (op basis van `hue_unique_id`)
+3. Nieuw device → INSERT in `hue_devices` met room_name uit Hue Groups
+4. Groepeer multi-capability sensoren in `physical_devices`
+
+**Wanneer:** Discovery draait bij elke sync cycle (elke 5 minuten).
 
 ---
 
@@ -395,8 +410,7 @@ Flow:
 
 | Job | Schedule | Interval | Doel |
 |-----|----------|----------|------|
-| hue-poll-state | `*/5 * * * *` | 5 min | Device states |
-| hue-poll-battery | `0 * * * *` | 1 uur | Batterij levels |
+| hue-sync-state | `*/5 * * * *` | 5 min | Device states + discovery |
 
 ---
 
@@ -422,6 +436,8 @@ function hasStateChanged(prev, curr) {
   return false
 }
 ```
+
+**Let op:** De generieke `hasStateChanged()` functie wordt niet direct gebruikt. Elk device type implementeert eigen change detection logica in de polling code.
 
 **Speciaal geval: Motion sensors**
 

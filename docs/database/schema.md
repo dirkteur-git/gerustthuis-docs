@@ -19,11 +19,11 @@ Zie [DATABASE_DESIGN.md](../../DATABASE_DESIGN.md) voor het volledige schema met
 | `room_activity` | 5-minuten aggregaties per kamer |
 | `daily_activity_stats` | Dagelijkse statistieken per bewoner |
 
-### Views
+### Aggregatie Tabellen
 
-| View | Beschrijving |
-|------|--------------|
-| `room_activity_hourly` | Uurlijkse aggregatie van room_activity |
+| Tabel | Beschrijving |
+|-------|--------------|
+| `room_activity_hourly` | Uurlijkse aggregatie per kamer (TABLE met RLS, gevuld door pg_cron) |
 
 ### Gebruikers & Multi-tenancy
 

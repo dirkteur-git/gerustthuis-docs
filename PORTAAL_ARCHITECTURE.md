@@ -71,6 +71,8 @@ gerustthuis-portaal/
 │   │   └── supabase.js         # Database client + helpers
 │   ├── composables/
 │   │   └── useDataQuality.js   # Gedeelde berekeningen
+│   ├── components/
+│   │   └── Logo.vue            # Gedeeld logo component
 │   └── views/
 │       ├── Dashboard.vue       # Heatmap overzicht
 │       ├── Login.vue           # Login/registratie
@@ -132,13 +134,18 @@ onMounted()
 
 **Status banner logica:**
 ```javascript
-const ratio = today.totalEvents / Math.max(avg.totalEvents, 1)
-// Geen activiteit + normaal > 10     → "Erg rustig"
-// ratio < 0.5 && events < 20         → "Rustige dag"
-// ratio > 1.5                         → "Actieve dag"
-// anders                              → "Normale dag"
-// < 7 dagen data                      → "We leren nog"
+// Z-score based status (rolling comparison tot huidig uur)
+// Berekent z-scores voor: totalEvents, activeHours, longestGap, nightEvents, dagstart
+const maxZ = Math.max(...Object.values(zScores).map(Math.abs))
+
+// maxZ >= 2.0                        → "Sterk afwijkend" (rood)
+// maxZ >= 1.0                        → "Let even op" (amber)
+// 0 events + verwacht > 10           → "Erg rustig"
+// < 7 dagen data                     → "We leren nog"
+// anders                             → "Normale dag" (groen)
 ```
+
+**Rolling vergelijking:** De status banner vergelijkt alleen activiteit tot het huidige uur met de baseline voor datzelfde uurvenster. Dit voorkomt valse alarmen vroeg op de dag.
 
 **Heatmap aggregatie:**
 ```javascript
@@ -158,7 +165,7 @@ const ratio = today.totalEvents / Math.max(avg.totalEvents, 1)
 
 | Tabel | Query | Doel |
 |-------|-------|------|
-| `hue_config` | `SELECT * WHERE user_email = current_user.email` | Hue koppeling status |
+| `hue_config` | Via householdConfigId of eerste accessible config | Hue koppeling status |
 
 **Getoonde velden:**
 - `status` - active/error/expired
@@ -246,7 +253,7 @@ export function onAuthStateChange(callback)
 ```javascript
 // Hue koppeling voor huidige gebruiker
 export async function getHueConfig()
-// Query: SELECT * FROM hue_config WHERE user_email = current_user.email
+// Query: Via householdConfigId of eerste accessible config
 
 // Opslaan/updaten
 export async function saveHueConfig(config)
@@ -291,7 +298,7 @@ export async function getDevicesByRoom(roomName)
 // Recente events met device info
 export async function getRecentEvents(limit = 50)
 // Query: SELECT *, hue_devices(name, device_type, room_name)
-//        FROM activity_events ORDER BY recorded_at DESC LIMIT 50
+//        FROM raw_events ORDER BY recorded_at DESC LIMIT 50
 ```
 
 ---
@@ -302,7 +309,9 @@ export async function getRecentEvents(limit = 50)
 
 | View | Tabellen | Queries |
 |------|----------|---------|
-| Dashboard | hue_devices, physical_devices, room_activity_hourly | 3 |
+| Dashboard | daily_activity_stats, room_activity_hourly, activity_events, hue_devices, physical_devices | 5 |
+| Patronen | daily_activity_stats, room_activity_hourly, activity_events | 3 |
+| Analyse | daily_activity_stats, room_activity_hourly | 2 |
 | Instellingen | hue_config | 1 |
 | HueConnect | - | 0 |
 | HueCallback | - (via Edge Function) | 0 |
@@ -408,9 +417,36 @@ onMounted(async () => {
 | `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers |
 | `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
 
-## Multi-tenancy
+## Household Multi-tenancy
 
-Household-based multi-tenancy via `get_accessible_config_ids()`. Elke user ziet alleen data van eigen huishouden.
+Het portaal ondersteunt meerdere huishoudens per gebruiker via `supabase.js`:
+
+### State Management
+
+```javascript
+// Reactive user state
+const userState = reactive({
+  profile: null,          // user_profiles record
+  households: [],         // Alle huishoudens van de user
+  currentHousehold: null, // Actief huishouden
+  currentRole: null       // admin / viewer
+})
+```
+
+### Functies
+
+| Functie | Beschrijving |
+|---------|--------------|
+| `loadUserProfile()` | Laadt profiel + huishoudens bij login |
+| `switchHousehold(id)` | Wisselt actief huishouden |
+| `inviteToHousehold(email, role)` | Stuurt uitnodiging |
+| `acceptInvitation(token)` | Accepteert uitnodiging |
+
+### Hue Config Selectie
+
+De Hue configuratie wordt opgehaald via:
+1. `householdConfigId` van het actieve huishouden
+2. Fallback: eerste config uit `get_accessible_config_ids()`
 
 ## Bekende Beperkingen
 
@@ -443,6 +479,8 @@ VITE_HUE_CLIENT_ID=xxx
 | `/hue` | HueConnect.vue | Ja |
 | `/hue/callback` | HueCallback.vue | Ja |
 | `/uitnodiging/:token` | AcceptInvitation.vue | Nee |
+
+**Let op:** De `/analyse` route is beschikbaar maar niet zichtbaar in de sidebar navigatie (bedoeld als developer view).
 
 **Route guard in router.js:**
 ```javascript
