@@ -11,12 +11,13 @@ Centrale documentatie voor het GerustThuis ecosysteem.
 | [gerustthuis-website](https://github.com/dirkteur-git/gerustthuis-website) | Marketing website (particulier + zakelijk) |
 | [gerustthuis-app](https://github.com/dirkteur-git/gerustthuis-app) | React Native + Expo iOS app voor mantelzorgers |
 | [gerustthuis-docs](https://github.com/dirkteur-git/gerustthuis-docs) | Deze repository - documentatie en brandbook |
-| [gerustthuis-projectplan](https://github.com/dirkteur-git/gerustthuis-projectplan) | Intern projectplan (10 fasen) |
+| [gerustthuis-admin](https://github.com/dirkteur-git/gerustthuis-admin) | Admin portaal (projectplan, beheer, rapportages) |
 
 ## Documentatie
 
 | Document | Beschrijving |
 |----------|--------------|
+| [USER_STORIES.md](USER_STORIES.md) | Personages (bewoner, mantelzorger, installateur) en user stories |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Systeemarchitectuur en componenten overzicht |
 | [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | Database schema, tabellen, RLS policies |
 | [PORTAAL_ARCHITECTURE.md](PORTAAL_ARCHITECTURE.md) | Frontend architectuur en views |

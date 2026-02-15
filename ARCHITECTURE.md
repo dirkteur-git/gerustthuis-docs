@@ -61,10 +61,21 @@ Alle data wordt opgeslagen in Supabase PostgreSQL met Row Level Security.
 - `room_activity_hourly` - Uurlijkse aggregatie per kamer (TABLE met RLS)
 - `daily_activity_stats` - Dagelijkse statistieken
 - `households` - Multi-tenant huishoudens
-- `household_members` - Gebruikersrollen per huishouden
+- `household_members` - Gebruikersrollen per huishouden (admin/viewer/installer)
 - `user_profiles` - Gebruikersprofielen
+- `residents` - Bewonersprofielen (naam, relatie, foto)
 
 Zie [DATABASE_DESIGN.md](DATABASE_DESIGN.md) voor volledig schema.
+
+**Personages:**
+
+| Personage | Beschrijving | Account |
+|-----------|--------------|---------|
+| Bewoner | De oudere die gemonitord wordt | Geen login, profiel in `residents` |
+| Mantelzorger | De persoon die meekijkt | Account, rol `admin` of `viewer` |
+| Installateur | De persoon die sensoren plaatst | Account, rol `installer` (beperkte toegang) |
+
+Zie [USER_STORIES.md](USER_STORIES.md) voor user stories per personage.
 
 ### 4. Vue 3 Portaal (Frontend)
 
@@ -93,13 +104,13 @@ Vue 3 marketing website op apart domein.
 
 **Locatie:** `gerustthuis-website/`
 
-### 6. Projectplan Applicatie
+### 6. Admin Portaal
 
-Vue 3 projectplan applicatie met 10 fasen.
+Vue 3 admin portaal met projectplan, beheer en rapportages.
 
-**Tech stack:** Vue 3, Vite
+**Tech stack:** Vue 3, Vite, Tailwind CSS, Supabase
 
-**Locatie:** `gerustthuis-projectplan/`
+**Locatie:** `gerustthuis-admin/`
 
 ### 7. iOS App (Mantelzorgers)
 

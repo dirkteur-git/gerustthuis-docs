@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" fill="none">
+  <!-- GerustThuis — Wordmark donkere achtergrond -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;display=swap');
+      .wm { font-family: 'DM Serif Display', Georgia, serif; font-size: 28px; }
+    </style>
+  </defs>
+  <g>
+    <rect width="64" height="64" rx="16" fill="#4A7B58"/>
+    <path d="M12 34 L32 16 L52 34" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M24 39 C24 35.5, 28 32, 32 35.5 C36 32, 40 35.5, 40 39 C40 44.5, 32 50, 32 50 C32 50, 24 44.5, 24 39Z" fill="#F0C896"/>
+  </g>
+  <text x="80" y="42" class="wm">
+    <tspan fill="#7BA88A">Gerust</tspan><tspan fill="#ffffff">Thuis</tspan>
+  </text>
+</svg>

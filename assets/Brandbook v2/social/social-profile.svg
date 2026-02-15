@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" fill="none">
+  <!-- GerustThuis — Social Profile (LinkedIn, etc.) -->
+  <rect width="400" height="400" fill="#4A7B58"/>
+  <path d="M80 216 L200 104 L320 216" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M152 248 C152 224, 176 200, 200 224 C224 200, 248 224, 248 248 C248 284, 200 320, 200 320 C200 320, 152 284, 152 248Z" fill="#F0C896"/>
+</svg>

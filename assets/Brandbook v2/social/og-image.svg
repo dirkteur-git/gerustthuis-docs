@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" fill="none">
+  <!-- GerustThuis — OG Image / Website Share -->
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=DM+Sans:wght@400;500&amp;display=swap');
+    </style>
+  </defs>
+  <rect width="1200" height="630" fill="#4A7B58"/>
+  
+  <!-- Grain texture overlay -->
+  <rect width="1200" height="630" fill="url(#noise)" opacity="0.03"/>
+  
+  <!-- Centered content -->
+  <!-- Icon -->
+  <g transform="translate(500, 140)">
+    <rect width="88" height="88" rx="22" fill="rgba(255,255,255,0.12)"/>
+    <path d="M16 48 L44 24 L72 48" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M33 55 C33 50, 38.5 45, 44 50 C49.5 45, 55 50, 55 55 C55 63, 44 72, 44 72 C44 72, 33 63, 33 55Z" fill="#F0C896"/>
+  </g>
+
+  <!-- Logo wordmark centered -->
+  <text x="600" y="290" text-anchor="middle" style="font-family: 'DM Serif Display', Georgia, serif; font-size: 56px; fill: white;">
+    <tspan fill="rgba(255,255,255,0.8)">Gerust</tspan><tspan fill="#ffffff" font-style="italic">Thuis</tspan>
+  </text>
+  
+  <!-- Tagline -->
+  <text x="600" y="340" text-anchor="middle" style="font-family: 'DM Sans', system-ui, sans-serif; font-size: 20px; fill: rgba(255,255,255,0.65);">
+    Thuismonitoring met rust
+  </text>
+  
+  <!-- URL bottom -->
+  <text x="600" y="530" text-anchor="middle" style="font-family: 'DM Sans', system-ui, sans-serif; font-size: 16px; fill: rgba(255,255,255,0.4); letter-spacing: 0.1em;">
+    gerustthuis.care
+  </text>
+</svg>

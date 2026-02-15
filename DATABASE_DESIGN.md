@@ -2,7 +2,7 @@
 
 Actuele database structuur in Supabase (gerustthuis-supabase).
 
-**Laatst bijgewerkt:** 2026-02-14
+**Laatst bijgewerkt:** 2026-02-15
 
 ---
 
@@ -33,6 +33,19 @@ Actuele database structuur in Supabase (gerustthuis-supabase).
          └─>│room_activity_hourly│
             │     (table)        │
             └────────────────────┘
+
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   households    │────<│household_members│     │  user_profiles  │
+│(huishouden naam)│     │(admin/viewer/   │     │  (auth.users)   │
+└────────┬────────┘     │   installer)    │     └─────────────────┘
+         │              └─────────────────┘
+         │
+    ┌────▼────────────┐
+    │    residents     │
+    │ (bewoner profiel)│
+    │ naam, relatie,   │
+    │ foto             │
+    └─────────────────┘
 ```
 
 ---
@@ -476,6 +489,73 @@ Dit zorgt ervoor dat meerdere gebruikers dezelfde Hue bridge kunnen gebruiken zo
 - `authenticated` - Ingelogde gebruikers (SELECT, gefilterd op user_email)
 - `service_role` - Backend/Edge Functions (full access)
 
+### residents RLS
+
+```sql
+-- Alle leden van het huishouden kunnen bewoners zien (incl. installer — het is iemand uit de kring)
+CREATE POLICY "Members view residents" ON residents
+    FOR SELECT TO authenticated
+    USING (
+        household_id IN (
+            SELECT household_id FROM household_members
+            WHERE user_id = auth.uid()
+        )
+    );
+
+-- Alleen admins kunnen bewoners aanmaken/bewerken/verwijderen
+CREATE POLICY "Admins manage residents" ON residents
+    FOR ALL TO authenticated
+    USING (
+        household_id IN (
+            SELECT household_id FROM household_members
+            WHERE user_id = auth.uid() AND role = 'admin'
+        )
+    )
+    WITH CHECK (
+        household_id IN (
+            SELECT household_id FROM household_members
+            WHERE user_id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Service role full access residents" ON residents
+    FOR ALL TO service_role
+    USING (true) WITH CHECK (true);
+```
+
+### Installateur RLS beperkingen
+
+De `installer` rol heeft bewust **beperkte toegang** om de privacy van de bewoner te beschermen:
+
+| Tabel | Installer toegang | Reden |
+|-------|-------------------|-------|
+| `hue_devices` | Ja | Nodig voor sensor configuratie |
+| `physical_devices` | Ja | Nodig voor sensor configuratie |
+| `hue_config` | Ja | Nodig voor Hue Bridge koppeling |
+| `activity_events` | **Nee** | Bevat privacygevoelige bewegingsdata |
+| `room_activity` | **Nee** | Bevat privacygevoelige activiteitsdata |
+| `room_activity_hourly` | **Nee** | Bevat privacygevoelige activiteitsdata |
+| `daily_activity_stats` | **Nee** | Bevat privacygevoelige dagstatistieken |
+| `residents` | **Ja** | Installer is iemand uit de kring, kent de bewoner |
+
+Activiteitsdata-tabellen krijgen een extra RLS check die de installateurrol uitsluit:
+
+```sql
+-- Voorbeeld: activity_events (zelfde patroon voor room_activity, room_activity_hourly, daily_activity_stats)
+CREATE POLICY "Users view own activity_events" ON activity_events
+    FOR SELECT TO authenticated
+    USING (
+        config_id IN (SELECT get_accessible_config_ids())
+        AND EXISTS (
+            SELECT 1 FROM household_members hm
+            JOIN households h ON hm.household_id = h.id
+            WHERE hm.user_id = auth.uid()
+              AND h.config_id = activity_events.config_id
+              AND hm.role IN ('admin', 'viewer')
+        )
+    );
+```
+
 ---
 
 ## Data Flow
@@ -565,6 +645,20 @@ LIMIT 100;
 
 ---
 
+## Personages & Rollen
+
+GerustThuis kent drie personages:
+
+| Personage | Beschrijving | Account |
+|-----------|--------------|---------|
+| **Bewoner** | De oudere die thuis woont en gemonitord wordt | Geen login, profiel in `residents` tabel |
+| **Mantelzorger** | De persoon die meekijkt via portaal of app | Account via Supabase Auth, rol `admin` of `viewer` |
+| **Installateur** | De persoon die sensoren plaatst en configureert | Account via Supabase Auth, rol `installer` |
+
+Zie [USER_STORIES.md](USER_STORIES.md) voor user stories per personage.
+
+---
+
 ## Households & Multi-tenancy
 
 ### Tabellen
@@ -573,7 +667,7 @@ LIMIT 100;
 | Kolom | Type | Beschrijving |
 |-------|------|--------------|
 | id | UUID | Primary key |
-| name | TEXT | Huishouden naam |
+| name | TEXT | Huishouden naam (bijv. "Bij mama") |
 | config_id | UUID | FK naar hue_config (gekoppelde Bridge) |
 | created_at | TIMESTAMPTZ | Aangemaakt |
 
@@ -583,9 +677,16 @@ LIMIT 100;
 | id | UUID | Primary key |
 | household_id | UUID | FK naar households |
 | user_id | UUID | FK naar auth.users |
-| role | TEXT | admin / viewer |
+| role | TEXT | `admin` / `viewer` / `installer` |
 | invited_by | UUID | Uitgenodigd door |
 | joined_at | TIMESTAMPTZ | Lid geworden |
+
+**Rollen:**
+| Rol | Bewoner profiel | Sensor overzicht | Activiteitsdata | Instellingen | Leden beheer |
+|-----|----------------|------------------|-----------------|--------------|-------------|
+| `admin` | Lezen + bewerken | Ja | Ja | Ja | Ja |
+| `viewer` | Alleen lezen | Ja | Ja | Nee | Nee |
+| `installer` | Alleen lezen | Ja | Nee | Nee | Nee |
 
 **user_profiles**
 | Kolom | Type | Beschrijving |
@@ -594,6 +695,51 @@ LIMIT 100;
 | display_name | TEXT | Weergavenaam |
 | active_household_id | UUID | Actief huishouden |
 | created_at | TIMESTAMPTZ | Aangemaakt |
+
+---
+
+### 8. `residents` - Bewonersprofielen per huishouden
+
+```sql
+CREATE TABLE residents (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    household_id    UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+    first_name      VARCHAR(100) NOT NULL,
+    relationship    VARCHAR(50) NOT NULL,
+    photo_path      TEXT,
+    date_of_birth   DATE,
+    notes           TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_residents_household ON residents(household_id);
+```
+
+**Kolom beschrijvingen:**
+| Kolom | Beschrijving |
+|-------|--------------|
+| `first_name` | Voornaam van de bewoner (bijv. "Annie") |
+| `relationship` | Relatie tot de mantelzorger: `mama`, `papa`, `opa`, `oma`, `partner`, `broer`, `zus`, `vriend`, `buurman`, `anders` |
+| `photo_path` | Relatief pad in Supabase Storage bucket `resident-photos` (bijv. `{household_id}/{resident_id}.jpg`) |
+| `date_of_birth` | Optioneel, voor leeftijdscontext |
+| `notes` | Optioneel, vrije notities |
+
+**Design:**
+- Bewoner heeft **geen eigen account** - puur een profiel aangemaakt door de admin
+- Een huishouden kan **meerdere bewoners** hebben (bijv. ouder echtpaar)
+- De `relationship` zit op de bewoner (niet op household_member), want het is een eigenschap van de bewoner t.o.v. het hele huishouden
+- Wordt gebruikt voor gepersonaliseerde berichten: "Het gaat goed met mama"
+
+### Supabase Storage: `resident-photos`
+
+```
+Bucket: resident-photos
+  - Public: false (private, signed URLs)
+  - Pad conventie: {household_id}/{resident_id}.jpg
+  - Max bestandsgrootte: 2MB
+  - Toegestane types: image/jpeg, image/png, image/webp
+```
 
 ### Access Control: `get_accessible_config_ids()`
 
@@ -671,6 +817,7 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 15. `018_remove_superadmin.sql` - Verwijder superadmin logica uit functies, policies, triggers
 16. `019_aggregation_cron_jobs.sql` - pg_cron jobs voor uurlijkse aggregatie (room_activity_hourly + daily_activity_stats)
 17. `020_expand_daily_stats.sql` - Voegt motion_events en door_events kolommen toe + update calculate functie
+18. `021_residents_and_roles.sql` - Bewonersprofielen (residents tabel), installer rol, RLS policies, Storage bucket
 
 ---
 
@@ -692,3 +839,4 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 | physical_devices | idx_physical_devices_room | room_name |
 | daily_activity_stats | idx_daily_activity_stats_config | config_id |
 | daily_activity_stats | idx_daily_activity_stats_date | date DESC |
+| residents | idx_residents_household | household_id |
