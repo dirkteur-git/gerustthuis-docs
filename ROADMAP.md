@@ -57,20 +57,22 @@ Feature status en geplande verbeteringen.
 - Rolling vergelijking (vandaag tot huidig uur vs baseline)
 - Z-score gebaseerde status banner op Dashboard
 
-### iOS App ✓
-- React Native + Expo iOS app voor mantelzorgers
-- "Geen bericht = goed bericht" filosofie
-- Setup flow met Hue koppeling
+### PWA App ✓
+- React + Vite + Tailwind PWA voor mantelzorgers (vervangt React Native)
+- 4 tabs: Overzicht / Familie / Meldingen / Instellingen
+- Privacy-first: geen exacte tijdstippen, alleen dagdelen
+- Zie [APP_DESIGN.md](APP_DESIGN.md) voor volledig design
+
+### Alert Systeem ✓ (in PWA)
+- Meldingenfeed met dagsamenvattingen, ochtend- en nachtmeldingen
+- Kritieke meldingen (geen activiteit), nachtelijke onrust
+- Dagelijkse samenvatting (elke avond)
+- Quiet hours configuratie via Instellingen tab
+- Zie [APP_DESIGN.md §6](APP_DESIGN.md) voor meldingstypen en [docs/overview/alerts.md](docs/overview/alerts.md)
 
 ---
 
 ## Prioriteit: Hoog
-
-### 1. Alert Systeem
-- [ ] Inactiviteitsalarm (geen beweging > X uur)
-- [ ] Nachtelijke onrust detectie
-- [ ] Email/push notificaties
-- [ ] Quiet hours configuratie
 
 ---
 
@@ -91,7 +93,6 @@ Feature status en geplande verbeteringen.
 
 ## Backlog
 
-- [ ] PWA support (offline viewing)
 - [ ] Export naar CSV/PDF
 - [ ] Real-time Supabase subscriptions
 - [ ] Push notificaties (browser)
@@ -103,6 +104,18 @@ Feature status en geplande verbeteringen.
 
 ## Changelog
 
+### Website Nuxt (feb 2026)
+- Nieuwe marketing website live: Nuxt 3 SSG (`gerustthuis-website-nuxt`)
+- Prijsmodel: Gratis / Plus (€60/jr) / Compleet Pakket (€200 eenmalig)
+  - Compleet Pakket: eigen hardware + installatie door ons + eerste jaar Plus
+  - Installatie alleen met eigen hardware — niet op Hue/IKEA van klant
+- Friendship deal: 1 maand gratis per doorverwezen aanmelding
+- Lanceringsprijs: eerste jaar 20% korting op Plus (€48 i.p.v. €60)
+- Privacy/beveiliging pagina toegevoegd (AVG-compliant)
+- Homepage vereenvoudigd: focus op emotionele story, hardware-secties verplaatst
+- Stappenplan: Koppel sensoren → Systeem leert → Jij voelt je gerust
+- Navigatie uitgebreid: Voor wie, Prijzen, beveiliging-link in footer
+
 ### v0.3.0 (Huidig - feb 2026)
 - Patronen pagina live (dagritme, trends, vergelijking)
 - Household-based multi-tenancy
@@ -112,7 +125,7 @@ Feature status en geplande verbeteringen.
 - Aggregatie automatisering via pg_cron (migratie 019)
 - Motion/door events tracking (migratie 020)
 - 18-feature anomaly detection met rolling vergelijking
-- iOS app (React Native + Expo)
+- PWA app (React + Vite + Tailwind, vervangt React Native)
 
 ### v0.2.0 (jan 2026)
 - Analyse pagina (Z-score anomaly detection)
