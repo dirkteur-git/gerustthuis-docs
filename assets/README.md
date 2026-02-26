@@ -1,68 +1,85 @@
 # GerustThuis Brand Package
 
-Versie 1.0 — Februari 2026
+Versie 3.0 — Deep Sage & Amber — Februari 2026
 
-## 📁 Inhoud
+## Inhoud
 
 ```
-gerustthuis-final/
-├── gerustthuis-brandbook.html      # Volledig interactief brandbook
-├── README.md                        # Dit bestand
+assets/
+├── gerustthuis-brand-v3/
+│   ├── gerustthuis-brandbook-v3.html    # Volledig interactief brandbook
+│   ├── GerustThuis-Brand-Package.zip    # Compleet pakket (download)
+│   │
+│   ├── logos/
+│   │   ├── logo-primary.svg/png         # Mono sage (standaard)
+│   │   ├── logo-two-color.svg/png       # Sage dak + amber hart
+│   │   ├── logo-white.svg/png           # Wit (voor donkere bg)
+│   │   ├── logo-on-dark.svg             # Op donkere achtergrond
+│   │   ├── wordmark-cream.svg/png       # Woordmerk op donker
+│   │   ├── wordmark-dark.svg/png        # Woordmerk op licht
+│   │   ├── wordmark-sage.svg/png        # Woordmerk in sage
+│   │   ├── wordmark-two-color.svg/png   # Woordmerk tweekleur
+│   │   ├── app-icon-gradient.svg/png    # App icoon gradient
+│   │   ├── app-icon-pro.svg/png         # App icoon zakelijk
+│   │   ├── app-icon-sage.svg/png        # App icoon sage
+│   │   ├── app-icon-sage-amber.svg/png  # App icoon sage+amber
+│   │   ├── favicon.svg                  # Favicon SVG
+│   │   ├── favicon-16.png               # Favicon 16px
+│   │   └── favicon-32.png               # Favicon 32px
+│   │
+│   └── social/
+│       ├── facebook-cover.svg/png       # Facebook cover (donker)
+│       ├── facebook-cover-light.svg/png # Facebook cover (licht)
+│       ├── instagram-post-square.svg/png
+│       ├── instagram-post-light.svg/png
+│       ├── instagram-story.svg/png
+│       ├── linkedin-banner.svg/png      # LinkedIn banner (donker)
+│       ├── linkedin-banner-light.svg/png
+│       └── profile-picture-round.svg/png
 │
-├── logo/
-│   │
-│   │  CONSUMER VARIANT
-│   ├── gerustthuis-icon-primary.svg      # Groen icoon (primair)
-│   ├── gerustthuis-icon-nobg.svg         # Zonder achtergrond (groen)
-│   ├── gerustthuis-icon-white.svg        # Wit (voor donkere bg)
-│   ├── gerustthuis-icon-mono.svg         # Monochroom (print)
-│   ├── gerustthuis-wordmark-horizontal.svg
-│   ├── gerustthuis-wordmark-stacked.svg
-│   ├── gerustthuis-wordmark-dark-bg.svg
-│   │
-│   │  PRO VARIANT (ZAKELIJK)
-│   ├── gerustthuis-pro-icon.svg          # Antraciet icoon
-│   ├── gerustthuis-pro-wordmark.svg      # Met PRO badge
-│   ├── gerustthuis-pro-wordmark-dark-bg.svg
-│   │
-│   │  APP & SOCIAL
-│   ├── favicon.svg                 # 32x32
-│   ├── app-icon-512.svg            # App Store ready
-│   └── social-profile.svg          # 400x400
+├── colors/
+│   ├── colors.css                       # CSS variabelen (v3)
+│   └── tailwind.config.js              # Tailwind config (v3)
 │
-└── colors/
-    ├── colors.css                  # CSS variabelen
-    └── tailwind.config.js          # Tailwind config
+└── README.md                            # Dit bestand
 ```
 
-## 🎨 Logo Concept: Shelter + Signal
+## Logo concept: Dun dak, stevig hart
 
 Het logo combineert:
-- **Dak (shelter):** Bescherming, veiligheid, thuis
-- **Persoon (stip):** De oudere die thuis woont  
-- **Signaal ringen:** "We kijken mee" — zachte monitoring
+- **Dak (4px lijn):** Bescherming, veiligheid, thuis — subtiel op de achtergrond
+- **Hart (7.5px lijn):** Warmte, zorg — wat je voelt
+- Eén geheel, twee gewichten — precies zoals GerustThuis werkt
 
-## 🏷️ Twee Varianten
+## Twee varianten
 
 | Variant | Gebruik | Logo |
 |---------|---------|------|
-| **Consumer** | Mantelzorgers, families | Groen icoon |
-| **Pro** | Thuiszorg, corporaties, gemeenten | Antraciet icoon + PRO badge |
+| **Consumer** | Mantelzorgers, families | Sage dak + amber hart |
+| **Pro** | Thuiszorg, corporaties, gemeenten | Donker icoon + gedempt hart |
 
-## 🎨 Kleuren
+## Kleuren (v3 — Deep Sage & Amber)
 
 | Naam | Hex | Gebruik |
 |------|-----|---------|
-| Gerust Groen | `#10b981` | Accent, CTA's |
-| Antraciet | `#111827` | Koppen, Pro variant |
-| Warm Grijs | `#6b7280` | Bodytekst |
-| Licht Grijs | `#f3f4f6` | Achtergronden |
+| Deep Sage | `#3E6652` | Primair accent, CTA's |
+| Sage Mid | `#5E9178` | Positieve status, hover |
+| Amber | `#D4944C` | Warmte-accent, let-op |
+| Amber Light | `#F0C88C` | Highlights, zachte accenten |
+| Ink | `#2C2C2C` | Koppen, tekst |
+| Cream | `#FDFCF7` | Pagina-achtergrond |
+| Sand | `#F5F1EA` | Secties, kaarten |
 
-## 🔗 Links
+## Typografie
+
+- **Koppen:** DM Serif Display
+- **Body:** DM Sans
+
+## Links
 
 - Website: gerustthuis.care
-- Brandbook: Open `gerustthuis-brandbook.html`
+- Brandbook: Open `gerustthuis-brand-v3/gerustthuis-brandbook-v3.html`
 
 ---
 
-© 2026 GerustThuis
+© 2026 GerustThuis — een handelsnaam van BoostiX

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GerustThuis — Brandbook v3.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --sage:#3E6652;--sage-mid:#5E9178;--sage-pale:#E0EDE4;--sage-deep:#2E5440;
+      --amber:#D4944C;--amber-light:#F0C88C;--amber-pale:#F5EBD8;
+      --ink:#2C2C2C;--ink-soft:#5A5A5A;--ink-muted:#8A8A8A;
+      --sand:#F5F1EA;--cream:#FDFCF7;--border:#E4DED4;--border-light:#EDE9E2;
+      --ok:#3E6652;--notice:#D4944C;--urgent:#C4645A;--inactive:#B8B3AD;
+      --f-display:'DM Serif Display',Georgia,serif;--f-body:'DM Sans',-apple-system,sans-serif;
+    }
+    body{font-family:var(--f-body);background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+    .cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--sage);position:relative;overflow:hidden;padding:48px 24px}
+    .cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 80%,rgba(212,148,76,0.08) 0%,transparent 60%)}
+    .cover-c{position:relative;z-index:1;text-align:center}
+    .cover-c svg{width:96px;height:96px;filter:drop-shadow(0 4px 24px rgba(0,0,0,0.1));margin-bottom:40px}
+    .cover h1{font-family:var(--f-display);font-size:clamp(42px,7vw,72px);color:white;letter-spacing:-0.02em;line-height:1.1;margin-bottom:14px}
+    .cover h1 em{color:var(--amber-light);font-style:italic}
+    .cover-sub{font-size:18px;color:rgba(255,255,255,0.7);letter-spacing:0.08em;text-transform:uppercase}
+    .cover-ver{font-size:13px;color:rgba(255,255,255,0.35);margin-top:48px}
+
+    .nav{background:var(--cream);border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+    .nav-in{max-width:960px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+    .nav-b{font-family:var(--f-display);font-size:16px;color:var(--sage);text-decoration:none;margin-right:auto}
+    .nav a:not(.nav-b){color:var(--ink-muted);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+    .nav a:not(.nav-b):hover{color:var(--sage)}
+
+    .ct{max-width:960px;margin:0 auto;padding:64px 24px}
+    .sec{margin-bottom:80px}
+    .sec-l{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sage);margin-bottom:12px}
+    .sec-t{font-family:var(--f-display);font-size:clamp(28px,4vw,36px);color:var(--ink);letter-spacing:-0.01em;margin-bottom:14px;line-height:1.2}
+    .sec-i{font-size:16px;color:var(--ink-soft);max-width:640px;margin-bottom:40px;line-height:1.7}
+    .st{font-family:var(--f-display);font-size:22px;color:var(--ink);margin:40px 0 12px}
+    .sd{font-size:14px;color:var(--ink-soft);margin-bottom:24px;max-width:560px;line-height:1.7}
+    .div{height:1px;background:var(--border);margin:48px 0}
+
+    .card{background:white;border:1px solid var(--border);border-radius:16px;padding:28px}
+    .cg{display:grid;gap:20px}.cg2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.cg3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.cg4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+    .card h3{font-family:var(--f-display);font-size:18px;margin-bottom:8px}
+    .card p{font-size:14px;color:var(--ink-soft);line-height:1.6}
+
+    /* Logo showcase */
+    .ls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin:28px 0}
+    .lf{border-radius:16px;padding:40px 24px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;border:1px solid var(--border);position:relative;min-height:160px}
+    .lf.w{background:white}.lf.s{background:var(--sand)}.lf.g{background:var(--sage);border-color:transparent}.lf.d{background:var(--ink);border-color:transparent}
+    .lf .fl{position:absolute;bottom:10px;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-muted)}
+    .lf.g .fl,.lf.d .fl{color:rgba(255,255,255,0.4)}
+
+    /* Colors */
+    .cr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:24px 0}
+    .cc{border-radius:12px;overflow:hidden;border:1px solid var(--border);background:white}
+    .cc-sw{height:80px}
+    .cc-in{padding:12px 14px}
+    .cc-n{font-weight:600;font-size:13px;margin-bottom:2px}
+    .cc-h{font-family:'DM Sans',monospace;font-size:12px;color:var(--ink-muted);margin-bottom:4px}
+    .cc-u{font-size:11px;color:var(--ink-muted);line-height:1.4}
+
+    /* Status */
+    .sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0}
+    .si{display:flex;align-items:center;gap:12px;padding:14px 18px;background:white;border:1px solid var(--border);border-radius:12px}
+    .sd2{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+    .sl{font-weight:600;font-size:13px}.sm{font-size:11px;color:var(--ink-muted);font-family:'DM Sans',monospace}
+
+    /* Type */
+    .ts{background:white;border:1px solid var(--border);border-radius:16px;padding:36px;margin:24px 0}
+    .tr{display:flex;align-items:baseline;gap:24px;padding:14px 0;border-bottom:1px solid var(--border-light)}
+    .tr:last-child{border-bottom:none}
+    .tp{width:140px;flex-shrink:0;font-size:11px;color:var(--ink-muted);font-weight:500}
+
+    /* Tone examples */
+    .tg{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
+    @media(max-width:600px){.tg{grid-template-columns:1fr}.tr{flex-direction:column;gap:6px}.tp{width:auto}}
+    .tc{border-radius:12px;border:1px solid var(--border);overflow:hidden}
+    .th{padding:12px 20px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+    .th.bad{background:#FBEAE8;color:var(--urgent)}.th.good{background:var(--sage-pale);color:var(--sage)}
+    .tb{padding:20px;background:white}
+    .te{font-size:14px;color:var(--ink-soft);padding:7px 0;border-bottom:1px solid var(--border-light);font-style:italic;line-height:1.5}
+    .te:last-child{border-bottom:none}
+
+    /* Notification examples */
+    .ne{background:var(--sand);border-radius:16px;padding:36px;margin:24px 0;display:flex;gap:20px;flex-wrap:wrap}
+    .nc{background:white;border:1px solid var(--border);border-radius:14px;padding:18px 22px;max-width:340px;flex:1;min-width:260px}
+    .nt{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .nd{width:8px;height:8px;border-radius:50%}
+    .ns{font-size:12px;font-weight:600}
+    .nm{font-size:11px;color:var(--ink-muted);margin-left:auto}
+    .nh{font-family:var(--f-display);font-size:17px;margin-bottom:3px}
+    .nb{font-size:14px;color:var(--ink-soft);line-height:1.5}
+
+    /* Buttons */
+    .br{display:flex;gap:14px;flex-wrap:wrap;margin:24px 0;align-items:center}
+    .btn{padding:12px 26px;border-radius:10px;font-size:14px;font-weight:600;font-family:var(--f-body);cursor:pointer;transition:all .2s}
+    .btn-p{background:var(--sage);color:white;border:none;box-shadow:0 2px 8px rgba(62,102,82,0.25)}
+    .btn-s{background:white;color:var(--ink);border:1.5px solid var(--border)}
+    .btn-w{background:var(--amber);color:white;border:none}
+    .btn-g{background:transparent;color:var(--sage);border:none;padding:12px 16px}
+
+    /* Rules */
+    .rl{list-style:none;margin:16px 0}
+    .rl li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light);font-size:14px;color:var(--ink-soft);line-height:1.5}
+    .rl li:last-child{border-bottom:none}
+    .ri{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;font-weight:700;margin-top:1px}
+    .ri.do{background:var(--sage-pale);color:var(--sage)}.ri.x{background:#FBEAE8;color:var(--urgent)}
+
+    /* Icons */
+    .ig{display:flex;gap:28px;flex-wrap:wrap;margin:24px 0;align-items:center}
+    .id{text-align:center}.id svg{margin-bottom:6px}.id span{display:block;font-size:11px;color:var(--ink-muted)}
+
+    /* Spacing */
+    .spg{display:flex;gap:28px;flex-wrap:wrap;margin:24px 0;align-items:flex-end}
+    .spu{text-align:center}
+    .spb{background:var(--sage);opacity:0.25;border-radius:4px;margin-bottom:8px}
+    .spn{font-size:12px;font-weight:600}.spv{font-size:11px;color:var(--ink-muted)}
+
+    /* A11y */
+    .ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:24px 0}
+    .ac{background:white;border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center}
+    .av{font-family:var(--f-display);font-size:28px;color:var(--sage);margin-bottom:4px}
+    .al{font-size:12px;font-weight:600;margin-bottom:3px}.ad{font-size:11px;color:var(--ink-muted)}
+
+    /* Variants */
+    .vr{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:28px 0}
+    @media(max-width:640px){.vr{grid-template-columns:1fr}}
+    .vc{border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+    .vt{padding:28px;text-align:center}
+    .vt.con{background:linear-gradient(160deg,var(--sage-pale),white)}
+    .vt.pro{background:linear-gradient(160deg,#3a3a3a,var(--ink))}
+    .vtg{display:inline-block;padding:4px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px}
+    .vtg.con{background:var(--sage);color:white}.vtg.pro{background:var(--amber);color:white}
+    .vn{font-family:var(--f-display);font-size:22px}
+    .vt.pro .vn{color:white}
+    .vb{padding:22px 28px;background:white}
+    .vb li{font-size:13px;color:var(--ink-soft);padding:5px 0;list-style:none;display:flex;gap:10px}
+    .vck{color:var(--sage);font-weight:700;flex-shrink:0}
+
+    .ft{text-align:center;padding:64px 24px;border-top:1px solid var(--border)}
+    .ft-b{font-family:var(--f-display);font-size:18px;color:var(--sage);margin-bottom:8px}
+    .ft-m{font-size:12px;color:var(--ink-muted)}
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<header class="cover">
+  <div class="cover-c">
+    <svg viewBox="0 0 120 120" fill="none">
+      <path d="M22 60 L60 28 L98 60" stroke="rgba(255,255,255,0.55)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="white" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <h1>Gerust<em>Thuis</em></h1>
+    <p class="cover-sub">Brandbook & Identiteit</p>
+    <p class="cover-ver">Versie 3.0 — Deep Sage & Amber — Februari 2026</p>
+  </div>
+</header>
+
+<nav class="nav"><div class="nav-in">
+  <a href="#" class="nav-b">GerustThuis</a>
+  <a href="#kern">Kern</a><a href="#logo">Logo</a><a href="#var">Varianten</a><a href="#kleur">Kleuren</a><a href="#type">Typografie</a><a href="#taal">Taal</a><a href="#comp">Componenten</a><a href="#a11y">Toegankelijkheid</a>
+</div></nav>
+
+<main class="ct">
+
+<!-- 1. KERN -->
+<section id="kern" class="sec">
+  <div class="sec-l">01 — Merkessentie</div>
+  <h2 class="sec-t">Geruststelling begint bij vertrouwen</h2>
+  <p class="sec-i">GerustThuis geeft mantelzorgers gemoedsrust door slimme, onopvallende monitoring van hun dierbaren. Ons merk voelt aan als een warme hand op de schouder — niet als een alarmsysteem.</p>
+
+  <div class="cg cg2">
+    <div class="card"><h3>Missie</h3><p>Mantelzorgers gemoedsrust geven, zodat ze hun eigen leven kunnen leiden in het vertrouwen dat het goed gaat met hun dierbare.</p></div>
+    <div class="card"><h3>Belofte</h3><p>Wij vertellen je rustig hoe de dag verloopt. Geen alarmen, geen jargon — gewoon duidelijkheid wanneer je het nodig hebt.</p></div>
+  </div>
+
+  <div class="st">Logo concept: Dun dak, stevig hart</div>
+  <p class="sd">Een beschermend dak in een dunne lijn (4px), met daaronder een krachtig hart in een dikke lijn (7.5px). Het dak beschermt subtiel op de achtergrond. Het hart is wat je voelt. Precies zoals GerustThuis werkt: de techniek is onzichtbaar, de warmte is wat je ziet.</p>
+
+  <div class="st">Kernwaarden</div>
+  <div class="cg cg4" style="margin-top:16px">
+    <div class="card" style="text-align:center;padding:24px 16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--sage-pale);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <svg width="20" height="20" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round"><path d="M10 3C6 3 3 6.5 3 9.5 3 15 10 18 10 18s7-3 7-8.5C17 6.5 14 3 10 3z"/></svg>
+      </div>
+      <h3 style="font-size:15px">Geruststelling</h3><p style="font-size:13px">Kalmeren, niet alarmeren</p>
+    </div>
+    <div class="card" style="text-align:center;padding:24px 16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--amber-pale);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <svg width="20" height="20" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M2 18c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <h3 style="font-size:15px">Menselijkheid</h3><p style="font-size:13px">Techniek voelt als zorg</p>
+    </div>
+    <div class="card" style="text-align:center;padding:24px 16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--sage-pale);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <svg width="20" height="20" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="3"/><path d="M3 10h14"/></svg>
+      </div>
+      <h3 style="font-size:15px">Privacy</h3><p style="font-size:13px">Geen camera's, geen microfoons</p>
+    </div>
+    <div class="card" style="text-align:center;padding:24px 16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--amber-pale);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <svg width="20" height="20" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><path d="M10 2v4M10 14v4M2 10h4M14 10h4"/><circle cx="10" cy="10" r="3"/></svg>
+      </div>
+      <h3 style="font-size:15px">Eenvoud</h3><p style="font-size:13px">Zo min mogelijk, zo goed mogelijk</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. LOGO -->
+<section id="logo" class="sec">
+  <div class="sec-l">02 — Logo</div>
+  <h2 class="sec-t">Dun dak, stevig hart</h2>
+  <p class="sec-i">Het logo bestaat uit twee elementen in één beeld: een beschermend dak (lijndikte 4) en een krachtig hart (lijndikte 7.5). Eén geheel, twee gewichten.</p>
+
+  <div class="ls">
+    <div class="lf w">
+      <svg width="72" height="72" viewBox="0 0 120 120" fill="none">
+        <path d="M22 60 L60 28 L98 60" stroke="#3E6652" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#3E6652" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="fl">Mono sage</span>
+    </div>
+    <div class="lf s">
+      <svg width="72" height="72" viewBox="0 0 120 120" fill="none">
+        <path d="M22 60 L60 28 L98 60" stroke="#3E6652" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#D4944C" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="fl">Tweekleur</span>
+    </div>
+    <div class="lf g">
+      <svg width="72" height="72" viewBox="0 0 120 120" fill="none">
+        <path d="M22 60 L60 28 L98 60" stroke="rgba(255,255,255,0.55)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="white" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="fl">Op sage</span>
+    </div>
+    <div class="lf g">
+      <svg width="72" height="72" viewBox="0 0 120 120" fill="none">
+        <path d="M22 60 L60 28 L98 60" stroke="rgba(255,255,255,0.55)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#F0C88C" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="fl">Amber op sage</span>
+    </div>
+    <div class="lf d">
+      <svg width="72" height="72" viewBox="0 0 120 120" fill="none">
+        <path d="M22 60 L60 28 L98 60" stroke="rgba(94,145,120,0.5)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#5E9178" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="fl">Op donker</span>
+    </div>
+  </div>
+
+  <div class="st">Regels</div>
+  <ul class="rl">
+    <li><span class="ri do">✓</span> Dak altijd 4px (of proportioneel), hart altijd 7.5px (of proportioneel)</li>
+    <li><span class="ri do">✓</span> Op kleine formaten (&lt;32px) worden beide lijnen proportioneel dikker</li>
+    <li><span class="ri do">✓</span> Gebruik altijd de aangeleverde SVG-bestanden</li>
+    <li><span class="ri do">✓</span> Minimale breedte icoon: 32px</li>
+    <li><span class="ri x">✗</span> Nooit het dak dikker maken dan het hart</li>
+    <li><span class="ri x">✗</span> Nooit vervormen, roteren of effecten toevoegen</li>
+    <li><span class="ri x">✗</span> Nooit het hart los van het dak gebruiken</li>
+    <li><span class="ri x">✗</span> Nooit op een drukke achtergrond plaatsen</li>
+  </ul>
+</section>
+
+<!-- 3. VARIANTEN -->
+<section id="var" class="sec">
+  <div class="sec-l">03 — Varianten</div>
+  <h2 class="sec-t">Consumer & Pro</h2>
+  <p class="sec-i">GerustThuis kent twee gezichten: een warm consumentenmerk voor families, en een professionele variant voor thuiszorg, corporaties en gemeenten.</p>
+  <div class="vr">
+    <div class="vc"><div class="vt con"><span class="vtg con">Consumer</span><div class="vn">GerustThuis</div>
+      <div style="margin-top:16px"><svg viewBox="0 0 120 120" width="48" fill="none"><path d="M22 60 L60 28 L98 60" stroke="#3E6652" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#D4944C" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+    </div><div class="vb"><ul>
+      <li><span class="vck">✓</span> Deep sage dak, amber hart</li>
+      <li><span class="vck">✓</span> Warme, persoonlijke communicatie</li>
+      <li><span class="vck">✓</span> Serif headings voor menselijkheid</li>
+      <li><span class="vck">✓</span> Voor: families, mantelzorgers</li>
+    </ul></div></div>
+    <div class="vc"><div class="vt pro"><span class="vtg pro">Zakelijk</span><div class="vn">GerustThuis Pro</div>
+      <div style="margin-top:16px"><svg viewBox="0 0 120 120" width="48" fill="none"><path d="M22 60 L60 28 L98 60" stroke="rgba(94,145,120,0.5)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#D4944C" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+    </div><div class="vb"><ul>
+      <li><span class="vck">✓</span> Donker icoon, gedempt amber hart</li>
+      <li><span class="vck">✓</span> Professionele, zakelijke toon</li>
+      <li><span class="vck">✓</span> Hogere data-dichtheid in dashboards</li>
+      <li><span class="vck">✓</span> Voor: thuiszorg, corporaties, gemeenten</li>
+    </ul></div></div>
+  </div>
+</section>
+
+<!-- 4. KLEUREN -->
+<section id="kleur" class="sec">
+  <div class="sec-l">04 — Kleuren</div>
+  <h2 class="sec-t">Deep Sage & Amber</h2>
+  <p class="sec-i">Diep sage groen als betrouwbare basis, warm amber voor liefde en menselijkheid, en crème/zandtinten als rustgevende achtergrond. Verdeling: 70% neutraal, 20% sage, 10% amber.</p>
+
+  <div class="st">Primair palet</div>
+  <div class="cr">
+    <div class="cc"><div class="cc-sw" style="background:#3E6652"></div><div class="cc-in"><div class="cc-n">Deep Sage</div><div class="cc-h">#3E6652</div><div class="cc-u">Primair accent, CTA's, dak in logo</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#5E9178"></div><div class="cc-in"><div class="cc-n">Sage Mid</div><div class="cc-h">#5E9178</div><div class="cc-u">Positieve status, hover states</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#D4944C"></div><div class="cc-in"><div class="cc-n">Amber</div><div class="cc-h">#D4944C</div><div class="cc-u">Hart in logo, warmte-accent, let-op status</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#F0C88C"></div><div class="cc-in"><div class="cc-n">Amber Light</div><div class="cc-h">#F0C88C</div><div class="cc-u">Highlights, hover, zachte accenten</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#2C2C2C"></div><div class="cc-in"><div class="cc-n">Ink</div><div class="cc-h">#2C2C2C</div><div class="cc-u">Koppen, belangrijke tekst</div></div></div>
+  </div>
+
+  <div class="st">Neutrale basis</div>
+  <div class="cr">
+    <div class="cc"><div class="cc-sw" style="background:#FDFCF7;border-bottom:1px solid var(--border)"></div><div class="cc-in"><div class="cc-n">Cream</div><div class="cc-h">#FDFCF7</div><div class="cc-u">Pagina-achtergrond</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#F5F1EA;border-bottom:1px solid var(--border)"></div><div class="cc-in"><div class="cc-n">Sand</div><div class="cc-h">#F5F1EA</div><div class="cc-u">Secties, kaart-achtergronden</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#fff;border-bottom:1px solid var(--border)"></div><div class="cc-in"><div class="cc-n">White</div><div class="cc-h">#FFFFFF</div><div class="cc-u">Cards, content</div></div></div>
+    <div class="cc"><div class="cc-sw" style="background:#5A5A5A"></div><div class="cc-in"><div class="cc-n">Ink Soft</div><div class="cc-h">#5A5A5A</div><div class="cc-u">Bodytekst</div></div></div>
+  </div>
+
+  <div class="st">Statuskleuren</div>
+  <div class="sr">
+    <div class="si"><div class="sd2" style="background:var(--ok)"></div><div><div class="sl">Goed</div><div class="sm">#3E6652</div></div></div>
+    <div class="si"><div class="sd2" style="background:var(--notice)"></div><div><div class="sl">Even opletten</div><div class="sm">#D4944C</div></div></div>
+    <div class="si"><div class="sd2" style="background:var(--urgent)"></div><div><div class="sl">Aandacht nodig</div><div class="sm">#C4645A</div></div></div>
+    <div class="si"><div class="sd2" style="background:var(--inactive)"></div><div><div class="sl">Inactief</div><div class="sm">#B8B3AD</div></div></div>
+  </div>
+</section>
+
+<!-- 5. TYPOGRAFIE -->
+<section id="type" class="sec">
+  <div class="sec-l">05 — Typografie</div>
+  <h2 class="sec-t">Warm en leesbaar</h2>
+  <p class="sec-i">DM Serif Display voor koppen — warm en met karakter. DM Sans voor body — helder leesbaar, ook voor oudere ogen.</p>
+
+  <div class="ts">
+    <div class="tr"><div class="tp">H1 — Display<br>DM Serif Display<br>32px</div><div style="font-family:var(--f-display);font-size:32px;color:var(--ink)">Hoe gaat het vandaag?</div></div>
+    <div class="tr"><div class="tp">H2 — Sectie<br>DM Serif Display<br>24px</div><div style="font-family:var(--f-display);font-size:24px;color:var(--ink)">Dagelijks overzicht</div></div>
+    <div class="tr"><div class="tp">H3 — Card<br>DM Sans Semibold<br>17px</div><div style="font-family:var(--f-body);font-size:17px;font-weight:600;color:var(--ink)">Rustige ochtend tot nu toe</div></div>
+    <div class="tr"><div class="tp">Body<br>DM Sans Regular<br>15px</div><div style="font-family:var(--f-body);font-size:15px;color:var(--ink-soft)">Mama heeft vandaag om 8:15 de keuken bezocht en om 12:30 geluncht. Een rustige, normale dag.</div></div>
+    <div class="tr"><div class="tp">Caption<br>DM Sans Medium<br>12px</div><div style="font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--ink-muted)">Laatst bijgewerkt: 14:32 · Alle meetpunten actief</div></div>
+  </div>
+</section>
+
+<!-- 6. TAAL -->
+<section id="taal" class="sec">
+  <div class="sec-l">06 — Taal & Communicatie</div>
+  <h2 class="sec-t">Woorden die geruststellen</h2>
+  <p class="sec-i">Onze taal bepaalt of een mantelzorger met een gerust hart verdergaat, of juist in paniek raakt.</p>
+
+  <div class="st">Statusmeldingen</div>
+  <div class="tg">
+    <div class="tc"><div class="th bad">Nooit zo</div><div class="tb">
+      <div class="te">"ALERT: Geen beweging gedetecteerd!"</div>
+      <div class="te">"Anomalie score: 0.73"</div>
+      <div class="te">"Sensor offline — systeem fout"</div>
+      <div class="te">"Gebruiker inactief sinds 09:00"</div>
+    </div></div>
+    <div class="tc"><div class="th good">Altijd zo</div><div class="tb">
+      <div class="te">"Rustige ochtend tot nu toe"</div>
+      <div class="te">"Een beetje anders dan gewoonlijk"</div>
+      <div class="te">"We missen even het zicht"</div>
+      <div class="te">"Nog geen activiteit vandaag"</div>
+    </div></div>
+  </div>
+
+  <div class="st">Notificatie voorbeelden</div>
+  <div class="ne">
+    <div class="nc"><div class="nt"><div class="nd" style="background:var(--ok)"></div><span class="ns" style="color:var(--ok)">Alles goed</span><span class="nm">14:32</span></div><div class="nh">Gewone donderdag</div><div class="nb">Mama heeft geluncht rond 12:30 en kijkt nu waarschijnlijk TV. Alles volgens het bekende ritme.</div></div>
+    <div class="nc"><div class="nt"><div class="nd" style="background:var(--notice)"></div><span class="ns" style="color:var(--notice)">Even opletten</span><span class="nm">09:45</span></div><div class="nh">Rustige ochtend</div><div class="nb">Nog geen activiteit in de keuken vandaag. Misschien uitslapen — maar check gerust even.</div></div>
+  </div>
+
+  <div class="st">Verboden woorden</div>
+  <ul class="rl">
+    <li><span class="ri x">✗</span> <strong>"Alert"</strong> of <strong>"Alarm"</strong></li>
+    <li><span class="ri x">✗</span> <strong>"Probleem gedetecteerd"</strong></li>
+    <li><span class="ri x">✗</span> <strong>"Afwijking"</strong> of <strong>"Anomalie"</strong></li>
+    <li><span class="ri x">✗</span> <strong>"Geen beweging"</strong> — klinkt als het ergste</li>
+    <li><span class="ri x">✗</span> <strong>"Monitoring"</strong> in consumer context — gebruik "meekijken"</li>
+    <li><span class="ri x">✗</span> Technisch jargon: "sensor", "systeem", "offline"</li>
+  </ul>
+</section>
+
+<!-- 7. COMPONENTEN -->
+<section id="comp" class="sec">
+  <div class="sec-l">07 — Componenten</div>
+  <h2 class="sec-t">UI bouwstenen</h2>
+
+  <div class="st">Buttons</div>
+  <div class="br">
+    <button class="btn btn-p">Bekijk dag</button>
+    <button class="btn btn-s">Instellingen</button>
+    <button class="btn btn-w">Bel mama</button>
+    <button class="btn btn-g">Meer info</button>
+  </div>
+
+  <div class="st">Border radius</div>
+  <p class="sd">12px voor cards, 10px voor buttons, 8px voor kleine elementen. Nooit scherpe hoeken.</p>
+
+  <div class="st">Spacing</div>
+  <p class="sd">4px grid. Ruimte ademt rust — liever te veel dan te weinig witruimte.</p>
+
+  <div class="st">Icoon stijl</div>
+  <p class="sd">Afgeronde lijn-iconen (stroke: 2px, linecap: round). Geen gevulde iconen, geen scherpe hoeken.</p>
+  <div class="ig">
+    <div class="id"><svg width="32" height="32" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5C11 5 7 9.5 7 13 7 21 16 27 16 27s9-6 9-14C25 9.5 21 5 16 5z"/></svg><span>Hart</span></div>
+    <div class="id"><svg width="32" height="32" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16h5l3-8 3 16 3-10 3 6h5"/></svg><span>Activiteit</span></div>
+    <div class="id"><svg width="32" height="32" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 L16 8 L26 20"/><path d="M9 18.5v8.5a1 1 0 001 1h12a1 1 0 001-1v-8.5"/></svg><span>Thuis</span></div>
+    <div class="id"><svg width="32" height="32" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="10"/><path d="M16 11v5l3 3"/></svg><span>Tijd</span></div>
+    <div class="id"><svg width="32" height="32" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h16a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2z"/><path d="M6 12h20"/><path d="M12 6v6"/></svg><span>Kalender</span></div>
+  </div>
+</section>
+
+<!-- 8. TOEGANKELIJKHEID -->
+<section id="a11y" class="sec">
+  <div class="sec-l">08 — Toegankelijkheid</div>
+  <h2 class="sec-t">Ontworpen voor iedereen</h2>
+  <div class="ag">
+    <div class="ac"><div class="av">6.1:1</div><div class="al">Contrast wit op sage</div><div class="ad">WCAG AA+ ruim gehaald</div></div>
+    <div class="ac"><div class="av">44px</div><div class="al">Touch target</div><div class="ad">Minimale tapgrootte mobiel</div></div>
+    <div class="ac"><div class="av">15px</div><div class="al">Minimale body</div><div class="ad">Consumer app bodytekst</div></div>
+    <div class="ac"><div class="av">1.6</div><div class="al">Line-height</div><div class="ad">Ruime regelafstand</div></div>
+  </div>
+  <ul class="rl">
+    <li><span class="ri do">✓</span> Status altijd met tekst + kleur, nooit alleen kleur</li>
+    <li><span class="ri do">✓</span> Alle interactieve elementen focusbaar met toetsenbord</li>
+    <li><span class="ri do">✓</span> Test regelmatig met echte gebruikers uit de doelgroep</li>
+    <li><span class="ri x">✗</span> Geen donkere mode (doelgroep heeft hier moeite mee)</li>
+    <li><span class="ri x">✗</span> Geen kleine tekst (&lt;14px) buiten dashboards</li>
+    <li><span class="ri x">✗</span> Geen autoplay video of audio</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="ft">
+  <div class="ft-b">GerustThuis</div>
+  <p class="ft-m">gerustthuis.care · Brandbook v3.0 — Deep Sage & Amber — Februari 2026<br>Vertrouwelijk — niet extern verspreiden zonder toestemming</p>
+</footer>
+
+</body>
+</html>

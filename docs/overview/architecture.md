@@ -40,9 +40,9 @@ Philips Hue Bridge
             │
             ▼
 ┌─────────────────────────────────────┐
-│   iOS App (Expo)                    │
-│   - StatusCard (normaal/afwijkend)  │
-│   - Push notificaties               │
+│   React PWA (Vite + Tailwind)       │
+│   - Overzicht (status, activiteit)  │
+│   - Familie, Meldingen, Instellingen│
 └─────────────────────────────────────┘
             │
             ▼

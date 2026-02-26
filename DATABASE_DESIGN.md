@@ -46,6 +46,16 @@ Actuele database structuur in Supabase (gerustthuis-supabase).
     │ naam, relatie,   │
     │ foto             │
     └─────────────────┘
+
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│    projects     │────<│ project_phases  │────<│ phase_criteria  │
+│  (projectplan)  │     │   (fasen)       │     │ phase_purchases │
+└────────┬────────┘     └─────────────────┘     │ phase_decisions │
+         │                                      └─────────────────┘
+    ┌────▼────────────┐     ┌─────────────────────┐
+    │ project_tickets │────<│ ticket_dependencies │
+    │   (taken)       │     └─────────────────────┘
+    └─────────────────┘
 ```
 
 ---
@@ -794,6 +804,46 @@ Aggregeert `room_activity` (5-minuten windows) naar `room_activity_hourly` (per 
 
 ---
 
+## Projectplan Tabellen (Migratie 022)
+
+Genormaliseerde tabellen voor projectplan/taken beheer:
+
+```
+┌─────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  projects   │────<│ project_phases  │────<│ phase_criteria  │
+│ (per user)  │     │ (fasen)         │     │ (go/no-go)      │
+└──────┬──────┘     └────────┬────────┘     └─────────────────┘
+       │                     │
+       │                     ├────<┌─────────────────┐
+       │                     │     │ phase_purchases │
+       │                     │     │ (uitgaven)      │
+       │                     │     └─────────────────┘
+       │                     │
+       │                     └────<┌─────────────────┐
+       │                           │ phase_decisions │
+       │                           │ (go/no-go)      │
+       │                           └─────────────────┘
+       │
+       └────<┌─────────────────┐     ┌──────────────────────┐
+             │ project_tickets │────<│ ticket_dependencies  │
+             │ (taken)         │     │ (relaties)           │
+             └─────────────────┘     └──────────────────────┘
+```
+
+**RLS:** Alle tabellen via `projects.user_id = auth.uid()`.
+
+| Tabel | Beschrijving |
+|-------|-------------|
+| `projects` | Project per gebruiker (naam, budget, valuta). UNIQUE op user_id. |
+| `project_phases` | Fasen met status (niet gestart/actief/go-no-go/afgerond), budget, no_go_action |
+| `phase_criteria` | Go/no-go criteria per fase (criterion_key + completed boolean) |
+| `phase_purchases` | Uitgaven per fase (bedrag, datum) |
+| `phase_decisions` | Go/no-go besluiten met notities |
+| `project_tickets` | Taken met status (todo/in-progress/done), prioriteit (must/should/nice), geschatte uren, geplande week |
+| `ticket_dependencies` | Afhankelijkheden tussen tickets (ticket_id → depends_on_id) |
+
+---
+
 ## Migratie Bestanden
 
 SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
@@ -818,6 +868,7 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 16. `019_aggregation_cron_jobs.sql` - pg_cron jobs voor uurlijkse aggregatie (room_activity_hourly + daily_activity_stats)
 17. `020_expand_daily_stats.sql` - Voegt motion_events en door_events kolommen toe + update calculate functie
 18. `021_residents_and_roles.sql` - Bewonersprofielen (residents tabel), installer rol, RLS policies, Storage bucket
+19. `022_project_tables.sql` - Genormaliseerde projectplan tabellen: projects, project_phases, phase_criteria, phase_purchases, phase_decisions, project_tickets, ticket_dependencies + RLS policies
 
 ---
 

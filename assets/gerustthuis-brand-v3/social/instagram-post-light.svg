@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" fill="none">
+  <rect width="1080" height="1080" fill="#FDFCF7"/>
+  <g transform="translate(516,486) scale(0.4)">
+    <path d="M22 60 L60 28 L98 60" stroke="#3E6652" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M76 68 C76 62, 68 56, 60 64 C52 56, 44 62, 44 68 C44 78, 60 90, 60 90 C60 90, 76 78, 76 68Z" stroke="#D4944C" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <text x="540" y="550" font-family="Georgia, 'DM Serif Display', serif" font-size="36" text-anchor="middle" fill="#2C2C2C">Gerust<tspan font-style="italic" fill="#3E6652">Thuis</tspan></text>
+  <text x="540" y="578" font-family="DM Sans, sans-serif" font-size="14" text-anchor="middle" fill="#5A5A5A" letter-spacing="0.05em">Meekijken met een gerust hart</text>
+</svg>

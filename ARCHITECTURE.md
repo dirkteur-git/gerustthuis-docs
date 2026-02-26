@@ -112,13 +112,17 @@ Vue 3 admin portaal met projectplan, beheer en rapportages.
 
 **Locatie:** `gerustthuis-admin/`
 
-### 7. iOS App (Mantelzorgers)
+### 7. PWA App (Mantelzorgers)
 
-React Native + Expo iOS app voor mantelzorgers.
+Mobiele Progressive Web App voor mantelzorgers. Toont activiteitspatronen per dagdeel — geen exacte tijdstippen.
 
-**Tech stack:** React Native, Expo SDK 54, TypeScript, Expo Router, Zustand
+**Tech stack:** React 19, Vite, Tailwind CSS, TypeScript, Zustand, Supabase
+
+**4 tabs:** Overzicht / Familie / Meldingen / Instellingen
 
 **Locatie:** `gerustthuis-app/`
+
+Zie [APP_DESIGN.md](APP_DESIGN.md) voor het volledige scherm- en design-overzicht.
 
 ---
 
@@ -186,6 +190,7 @@ households
 | Component | Hosting |
 |-----------|---------|
 | Portaal | Vercel |
+| PWA App | Vercel |
 | Website | Vercel |
 | Database | Supabase |
 | Edge Functions | Supabase |

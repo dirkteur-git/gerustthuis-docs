@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
-  <!-- GerustThuis — Favicon -->
-  <rect width="32" height="32" rx="8" fill="#4A7B58"/>
-  <path d="M6 17 L16 8 L26 17" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M12 20 C12 18.2, 14 16.5, 16 18.2 C18 16.5, 20 18.2, 20 20 C20 23, 16 26, 16 26 C16 26, 12 23, 12 20Z" fill="#F0C896"/>
-</svg>

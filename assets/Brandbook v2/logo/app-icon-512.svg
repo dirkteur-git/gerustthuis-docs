@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
-  <!-- GerustThuis — App Icon 512px -->
-  <rect width="512" height="512" rx="112" fill="#4A7B58"/>
-  <path d="M96 264 L256 120 L416 264" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M192 304 C192 272, 224 240, 256 272 C288 240, 320 272, 320 304 C320 352, 256 400, 256 400 C256 400, 192 352, 192 304Z" fill="#F0C896"/>
-</svg>

@@ -1,186 +1,205 @@
-GerustThuis Brandbook
-1. Merkessentie
-Missie: Mantelzorgers gemoedsrust geven door slimme, onopvallende monitoring van hun dierbaren.
-Kernwaarden:
+# GerustThuis Brandbook v3.0
 
-Geruststelling - niet alarmeren, maar kalmeren
-Eenvoud - complexe data, simpele communicatie
-Respect - voor privacy en autonomie van de oudere
-Betrouwbaar - altijd beschikbaar, nooit overdreven
+**Deep Sage & Amber — Februari 2026**
 
-Tone of voice:
+> Volledig interactief brandbook: `assets/gerustthuis-brand-v3/gerustthuis-brandbook-v3.html`
 
-Warm maar niet kinderachtig
-Informatief maar niet technisch
-Kalm maar niet afstandelijk
-Eerlijk maar niet alarmerend
+## 1. Merkessentie
 
-Voorbeelden:
-✗ Niet✓ Wel"ALERT: Geen beweging gedetecteerd!""Rustige ochtend tot nu toe""Anomalie score: 0.73""Iets anders dan normaal""Sensor offline""We missen even het zicht op de badkamer""Gebruiker inactief""Nog geen activiteit vandaag"
+**Missie:** Mantelzorgers gemoedsrust geven door slimme, onopvallende monitoring van hun dierbaren.
 
-2. Logo
-Primair logo:
+**Belofte:** Wij vertellen je rustig hoe de dag verloopt. Geen alarmen, geen jargon — gewoon duidelijkheid wanneer je het nodig hebt.
 
-"GerustThuis" in één woord
-"Gerust" in accent kleur, "Thuis" in donkergrijs
-Geen icoon nodig, het woord is het merk
+**Logo concept: Dun dak, stevig hart**
+Een beschermend dak in een dunne lijn (4px), met daaronder een krachtig hart in een dikke lijn (7.5px). Het dak beschermt subtiel op de achtergrond. Het hart is wat je voelt.
 
-Gebruiksregels:
+### Kernwaarden
 
-Minimale breedte: 120px
-Witruimte rondom: minimaal hoogte van de 'G'
-Nooit vervormen, roteren of effecten toevoegen
+| Waarde | Betekenis |
+|--------|-----------|
+| Geruststelling | Kalmeren, niet alarmeren |
+| Menselijkheid | Techniek voelt als zorg |
+| Privacy | Geen camera's, geen microfoons |
+| Eenvoud | Zo min mogelijk, zo goed mogelijk |
 
-Varianten:
+### Tone of voice
 
-Full color (voor witte achtergrond)
-Wit (voor donkere achtergrond)
-Monochroom grijs (voor print)
+- Warm maar niet kinderachtig
+- Informatief maar niet technisch
+- Kalm maar niet afstandelijk
+- Eerlijk maar niet alarmerend
 
+## 2. Logo
 
-3. Kleuren
-Primair palet:
-NaamHexGebruikGerust Groen#10b981Accent, positieve status, CTA'sAntraciet#111827Koppen, belangrijke tekstWarm Grijs#6b7280Bodytekst, secundaire infoLicht Grijs#f3f4f6Achtergronden, cardsWit#ffffffHoofdachtergrond
-Statuskleur:
-StatusKleurHexNormaal / goedGroen#10b981Let opAmber#f59e0bAandacht nodigRood#ef4444Inactief / onbekendGrijs#9ca3af
-Kleurgebruik regels:
+Twee elementen in één beeld: beschermend dak (lijndikte 4) + krachtig hart (lijndikte 7.5).
 
-Rood alleen voor echte problemen, nooit voor decoratie
-Groen is de standaard, niet rood
-Achtergronden altijd licht, nooit donkere mode (doelgroep)
+### Varianten
 
+| Variant | Gebruik | Bestand |
+|---------|---------|---------|
+| Mono sage | Standaard op wit | `logos/logo-primary.svg` |
+| Tweekleur | Sage dak + amber hart | `logos/logo-two-color.svg` |
+| Op sage | Wit op sage achtergrond | `logos/logo-white.svg` |
+| Op donker | Op donkere achtergronden | `logos/logo-on-dark.svg` |
 
-4. Typografie
-Font: Inter (of system-ui als fallback)
-ElementGrootteGewichtKleurH124px600AntracietH218px600AntracietH3 / Card titel16px600AntracietBody14px400Warm GrijsSmall / caption12px400#9ca3afButton14px500Wit of Antraciet
-Regels:
+### Regels
 
-Nooit volledig hoofdletters (behalve "OK" of "ID")
-Geen cursief, nooit
-Line-height: 1.5 voor bodytekst
+- Dak altijd 4px, hart altijd 7.5px (of proportioneel)
+- Op kleine formaten (<32px) worden beide lijnen proportioneel dikker
+- Gebruik altijd de aangeleverde SVG-bestanden
+- Minimale breedte icoon: 32px
+- Nooit het dak dikker maken dan het hart
+- Nooit vervormen, roteren of effecten toevoegen
+- Nooit het hart los van het dak gebruiken
 
+## 3. Varianten: Consumer & Pro
 
-5. Iconografie
-Stijl: Outline icons, 1.5px stroke, rounded corners
-Bron: Lucide Icons of Heroicons (outline variant)
-Sensortype iconen:
-TypeIcoonOmschrijvingLamp○ of lightbulbSimpele cirkel of gloeilampBewegingactivity of radioGolvenDeur/contactdoor-openDeurKnopsquareVierkant
-Status iconen:
-StatusIcoonNormaal✓ checkmarkLet op! in cirkelProbleem✕ of ! in driehoek
-Regels:
+| | Consumer | Pro (Zakelijk) |
+|---|---------|----------------|
+| **Logo** | Deep sage dak, amber hart | Donker icoon, gedempt amber hart |
+| **Toon** | Warm, persoonlijk | Professioneel, zakelijk |
+| **Headings** | Serif (DM Serif Display) | Serif |
+| **Doelgroep** | Families, mantelzorgers | Thuiszorg, corporaties, gemeenten |
 
-Iconen altijd vergezeld van tekst (toegankelijkheid)
-Kleur volgt de statuskleur
-Grootte: 16px inline, 20px standalone
+## 4. Kleuren
 
+### Primair palet
 
-6. Componenten
-Cards:
-cssbackground: #ffffff;
-border: 1px solid #e5e7eb;
-border-radius: 8px;
-padding: 20px;
-box-shadow: none;
-hover: box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-Buttons:
-TypeAchtergrondTekstBorderPrimaryGerust GroenWitGeenSecondaryWitAntraciet1px grijsGhostTransparantGerust GroenGeen
-cssborder-radius: 6px;
-padding: 10px 16px;
-font-weight: 500;
-Inputs:
-cssborder: 1px solid #d1d5db;
-border-radius: 6px;
-padding: 10px 12px;
-focus: border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-```
+| Naam | Hex | Gebruik |
+|------|-----|---------|
+| Deep Sage | `#3E6652` | Primair accent, CTA's, dak in logo |
+| Sage Mid | `#5E9178` | Positieve status, hover states |
+| Amber | `#D4944C` | Hart in logo, warmte-accent, let-op status |
+| Amber Light | `#F0C88C` | Highlights, hover, zachte accenten |
+| Ink | `#2C2C2C` | Koppen, belangrijke tekst |
 
-**Grafieken:**
-- Sparklines: alleen lijn, geen fill, geen assen
-- Grotere charts: minimale gridlines, geen 3D effecten
-- Kleur: Gerust Groen voor actueel, lichtgrijs voor gemiddelde/vergelijking
+### Neutrale basis
 
----
+| Naam | Hex | Gebruik |
+|------|-----|---------|
+| Cream | `#FDFCF7` | Pagina-achtergrond |
+| Sand | `#F5F1EA` | Secties, kaart-achtergronden |
+| White | `#FFFFFF` | Cards, content |
+| Ink Soft | `#5A5A5A` | Bodytekst |
+| Ink Muted | `#8A8A8A` | Captions, secundair |
 
-## 7. Communicatierichtlijnen
+### Statuskleuren
 
-**Statusmeldingen:**
+| Status | Kleur | Hex |
+|--------|-------|-----|
+| Goed | Sage | `#3E6652` |
+| Even opletten | Amber | `#D4944C` |
+| Aandacht nodig | Terracotta | `#C4645A` |
+| Inactief | Warm grijs | `#B8B3AD` |
 
-| Niveau | Titel | Toon |
-|--------|-------|------|
-| Goed | "Normale dag" | Kort, bevestigend |
-| Let op | "Iets anders dan normaal" | Neutraal, niet alarmerend |
-| Aandacht | "Bekijk even" | Direct, maar kalm |
+### Verdeling
 
-**Nooit zeggen:**
+70% neutraal (cream/sand/white) — 20% sage — 10% amber
+
+## 5. Typografie
+
+**Fonts:** DM Serif Display (koppen) + DM Sans (body)
+
+| Element | Font | Grootte | Gewicht |
+|---------|------|---------|---------|
+| H1 — Display | DM Serif Display | 32px | Regular |
+| H2 — Sectie | DM Serif Display | 24px | Regular |
+| H3 — Card | DM Sans | 17px | Semibold (600) |
+| Body | DM Sans | 15px | Regular (400) |
+| Caption | DM Sans | 12px | Medium (500) |
+
+## 6. Taal & Communicatie
+
+### Statusmeldingen
+
+| Nooit zo | Altijd zo |
+|----------|-----------|
+| "ALERT: Geen beweging gedetecteerd!" | "Rustige ochtend tot nu toe" |
+| "Anomalie score: 0.73" | "Een beetje anders dan gewoonlijk" |
+| "Sensor offline — systeem fout" | "We missen even het zicht" |
+| "Gebruiker inactief sinds 09:00" | "Nog geen activiteit vandaag" |
+
+### Verboden woorden
+
 - "Alert" of "Alarm"
 - "Probleem gedetecteerd"
 - "Afwijking" of "Anomalie"
-- "Geen beweging" (klinkt als dood)
-- Technisch jargon
+- "Geen beweging" — klinkt als het ergste
+- "Monitoring" in consumer context — gebruik "meekijken"
+- Technisch jargon: "sensor", "systeem", "offline"
 
-**Wel zeggen:**
-- "Rustige ochtend"
-- "Later actief dan normaal"
-- "Minder beweging dan gebruikelijk"
-- "We kijken even mee"
+## 7. Componenten
 
-**Notificaties:**
+### Buttons
+
+| Type | Achtergrond | Tekst |
+|------|-------------|-------|
+| Primary | Sage `#3E6652` | Wit |
+| Secondary | Wit | Ink |
+| Warm | Amber `#D4944C` | Wit |
+| Ghost | Transparant | Sage |
+
+### Border radius
+
+- 12px voor cards
+- 10px voor buttons
+- 8px voor kleine elementen
+- Nooit scherpe hoeken
+
+### Icoon stijl
+
+Afgeronde lijn-iconen (stroke: 2px, linecap: round). Geen gevulde iconen, geen scherpe hoeken.
+
+## 8. Toegankelijkheid
+
+| Meting | Waarde | Toelichting |
+|--------|--------|-------------|
+| Contrast | 6.1:1 | Wit op sage — WCAG AA+ ruim gehaald |
+| Touch target | 44px | Minimale tapgrootte mobiel |
+| Minimale body | 15px | Consumer app bodytekst |
+| Line-height | 1.6 | Ruime regelafstand |
+
+### Regels
+
+- Status altijd met tekst + kleur, nooit alleen kleur
+- Alle interactieve elementen focusbaar met toetsenbord
+- Test regelmatig met echte gebruikers uit de doelgroep
+- Geen donkere mode (doelgroep heeft hier moeite mee)
+- Geen kleine tekst (<14px) buiten dashboards
+- Geen autoplay video of audio
+
+## 9. Don'ts
+
+- Donkere mode
+- Kleine tekst (<14px voor body)
+- Complexe grafieken met veel lijnen
+- Alarmerende rode kleur als default
+- Animaties die afleiden
+- Technische termen in UI
+- Emoji's (behalve in onboarding)
+- Stockfoto's van lachende ouderen
+- Medische claims of terminologie
+- "Smart home" of "IoT" language
+
+## Bestanden
+
+Alle brand assets staan in `assets/gerustthuis-brand-v3/`:
+
 ```
-✗ "ALERT: Bewegingssensor Toilet geen activiteit 4 uur"
-
-✓ "Rustige middag - geen activiteit in huis sinds 12:00. 
-   Waarschijnlijk even weg, maar check gerust."
-
-8. Ruimte en layout
-Spacing schaal: 4px basis
-
-xs: 4px
-sm: 8px
-md: 16px
-lg: 24px
-xl: 32px
-2xl: 48px
-
-Grid:
-
-Max content width: 1200px
-Kolommen: 12
-Gutter: 24px
-Mobiel: 16px margins
-
-Witruimte:
-
-Liever te veel dan te weinig
-Cards hebben altijd ademruimte
-Geen content tegen de randen
-
-
-9. Toegankelijkheid
-Verplicht:
-
-Contrast ratio minimaal 4.5:1 voor tekst
-Focus states op alle interactieve elementen
-Tekst altijd bij iconen
-Klikbare gebieden minimaal 44x44px
-Geen informatie alleen via kleur
-
-Doelgroep-specifiek:
-
-Grotere klikgebieden (mantelzorgers zijn soms ook ouder)
-Geen autoplay animaties
-Duidelijke error states
-Simpele navigatie
-
-
-10. Don'ts
-
-✗ Donkere mode (doelgroep heeft vaak moeite met)
-✗ Kleine tekst (<14px voor body)
-✗ Complexe grafieken met veel lijnen
-✗ Alarmerende rode kleur als default
-✗ Animaties die afleiden
-✗ Technische termen in UI
-✗ Emoji's (behalve 👋 in onboarding)
-✗ Stockfoto's van lachende ouderen
-✗ Medische claims of terminologie
-✗ "Smart home" of "IoT" language
+gerustthuis-brand-v3/
+├── gerustthuis-brandbook-v3.html    # Interactief brandbook
+├── GerustThuis-Brand-Package.zip    # Compleet pakket
+├── logos/
+│   ├── logo-primary.svg/png         # Mono sage
+│   ├── logo-two-color.svg/png       # Sage + amber
+│   ├── logo-white.svg/png           # Op donker
+│   ├── logo-on-dark.svg             # Op donkere achtergrond
+│   ├── wordmark-*.svg/png           # Woordmerken (cream/dark/sage/two-color)
+│   ├── app-icon-*.svg/png           # App iconen (gradient/pro/sage/sage-amber)
+│   └── favicon.*                    # Favicons (16/32/SVG)
+└── social/
+    ├── facebook-cover*.svg/png      # Facebook covers
+    ├── instagram-*.svg/png          # Instagram posts & stories
+    ├── linkedin-banner*.svg/png     # LinkedIn banners
+    └── profile-picture-round.*      # Profielfoto's
+```

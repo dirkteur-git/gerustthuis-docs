@@ -1,61 +1,76 @@
 /* GerustThuis Brand Colors */
-/* Version 1.0 - February 2026 */
+/* Version 3.0 — Deep Sage & Amber — February 2026 */
 
 :root {
   /* ==================== */
   /* PRIMARY PALETTE      */
   /* ==================== */
-  
-  /* Gerust Groen - Primary brand color */
-  --gt-green: #10b981;
-  --gt-green-rgb: 16, 185, 129;
-  --gt-green-light: #34d399;
-  --gt-green-dark: #059669;
-  
-  /* Antraciet - Primary text color */
-  --gt-anthracite: #111827;
-  --gt-anthracite-rgb: 17, 24, 39;
-  
-  /* Warm Grijs - Secondary text color */
-  --gt-warm-gray: #6b7280;
-  --gt-warm-gray-rgb: 107, 114, 128;
-  
-  /* Licht Grijs - Background color */
-  --gt-light-gray: #f3f4f6;
-  --gt-light-gray-rgb: 243, 244, 246;
-  
-  /* Wit - Card/content background */
-  --gt-white: #ffffff;
-  --gt-white-rgb: 255, 255, 255;
-  
-  
+
+  /* Deep Sage - Primary brand color */
+  --gt-sage: #3E6652;
+  --gt-sage-rgb: 62, 102, 82;
+  --gt-sage-mid: #5E9178;
+  --gt-sage-pale: #E0EDE4;
+  --gt-sage-deep: #2E5440;
+
+  /* Amber - Warmth accent */
+  --gt-amber: #D4944C;
+  --gt-amber-rgb: 212, 148, 76;
+  --gt-amber-light: #F0C88C;
+  --gt-amber-pale: #F5EBD8;
+
+  /* Ink - Text colors */
+  --gt-ink: #2C2C2C;
+  --gt-ink-rgb: 44, 44, 44;
+  --gt-ink-soft: #5A5A5A;
+  --gt-ink-muted: #8A8A8A;
+
+
+  /* ==================== */
+  /* NEUTRAL BASIS        */
+  /* ==================== */
+
+  --gt-cream: #FDFCF7;
+  --gt-sand: #F5F1EA;
+  --gt-white: #FFFFFF;
+
+
   /* ==================== */
   /* STATUS COLORS        */
   /* ==================== */
-  
-  --gt-status-ok: #10b981;
-  --gt-status-ok-bg: #ecfdf5;
-  
-  --gt-status-warning: #f59e0b;
-  --gt-status-warning-bg: #fffbeb;
-  
-  --gt-status-alert: #ef4444;
-  --gt-status-alert-bg: #fef2f2;
-  
-  --gt-status-inactive: #9ca3af;
-  --gt-status-inactive-bg: #f3f4f6;
-  
-  
+
+  --gt-status-ok: #3E6652;
+  --gt-status-ok-bg: #E0EDE4;
+
+  --gt-status-notice: #D4944C;
+  --gt-status-notice-bg: #F5EBD8;
+
+  --gt-status-urgent: #C4645A;
+  --gt-status-urgent-bg: #FBEAE8;
+
+  --gt-status-inactive: #B8B3AD;
+  --gt-status-inactive-bg: #F5F1EA;
+
+
   /* ==================== */
   /* UI COLORS            */
   /* ==================== */
-  
-  --gt-border: #e5e7eb;
-  --gt-border-focus: #10b981;
-  
-  --gt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --gt-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --gt-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
-  --gt-focus-ring: 0 0 0 3px rgba(16, 185, 129, 0.15);
+
+  --gt-border: #E4DED4;
+  --gt-border-light: #EDE9E2;
+  --gt-border-focus: #3E6652;
+
+  --gt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --gt-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --gt-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  --gt-focus-ring: 0 0 0 3px rgba(62, 102, 82, 0.15);
+
+
+  /* ==================== */
+  /* TYPOGRAPHY           */
+  /* ==================== */
+
+  --gt-font-display: 'DM Serif Display', Georgia, serif;
+  --gt-font-body: 'DM Sans', -apple-system, sans-serif;
 }
