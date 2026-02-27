@@ -1,6 +1,6 @@
 # ADR-002: Één Vue 3 PWA — merge portaal en app
 
-**Status:** In uitvoering (feb 2026)
+**Status:** Uitgevoerd (feb 2026)
 **Datum:** 2025
 **Auteur:** Dirk Bakker
 
@@ -104,7 +104,7 @@ Redenen:
 - `supabase.js` uitgebreid met: `getResident()`, `getFamilyBoardMessages()`, `postFamilyBoardMessage()`, `getNotifications()`, `markNotificationRead()`, `markAllNotificationsRead()`
 - Router bijgewerkt: `/familie` en `/meldingen` routes toegevoegd
 - Link "Sensoren & Kamers →" toegevoegd in Instellingen.vue
-
-### Nog te doen
-- PWA configuratie (`vite-plugin-pwa`, service worker, manifest)
-- `gerustthuis-app` archiveren op GitHub
+- PWA configuratie: `vite-plugin-pwa` (generateSW, autoUpdate), workbox caching, manifest
+- Icons gegenereerd: 64/192/512px PNG + maskable + apple-touch-icon (180px)
+- `index.html`: PWA meta-tags (viewport-fit=cover, theme-color, apple-mobile-web-app)
+- `gerustthuis-app` gearchiveerd op GitHub

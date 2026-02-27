@@ -1,6 +1,6 @@
 # GerustThuis Project Health Report
 
-_Automatisch gegenereerd op 2026-02-27 15:59_
+_Automatisch gegenereerd op 2026-02-27 16:09_
 
 > Dit rapport is de centrale actielijst voor het project.
 > **❌ Problemen** moeten direct opgelost worden.
@@ -14,12 +14,11 @@ _Automatisch gegenereerd op 2026-02-27 15:59_
 - CORS staat op `'*'` in `_shared/cors.ts` — zet op specifieke domeinen (gerustthuis.nl, localhost)
 - `hue-token-exchange/index.ts` regel 32: console.log met (deel van) credential — verwijder voor productie
 
-## 📋 Niet gebouwd (8) — backlog items
+## 📋 Niet gebouwd (7) — backlog items
 
 - US-3: Installer DB-rol bestaat (migration 021) maar er is GEEN installer-specifieke UI/onboarding flow
 - US-3b: AcceptInvitation.vue mist rol-bewustzijn voor meekijker vs mantelzorger onboarding
 - US-5.5/5.6: Rol upgrade/downgrade (viewer↔admin) nog niet geïmplementeerd in portaal/app UI
-- ADR-002: Merge in uitvoering — tab-navigatie ✅, PWA configuratie (vite-plugin-pwa) nog open
 - ADR-003: IKEA Dirigera is prioriteit 1 na Hue — ikea-sync-state Edge Function ontbreekt nog
 - `gerustthuis-portaal`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
 - `gerustthuis-app`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
@@ -62,4 +61,4 @@ _Externe code review (feb 2026). Verwijder een item als het is opgelost._
 
 ---
 
-_Totaal: 2 problemen · 8 backlog · 7 risico · 108 checks OK_
+_Totaal: 2 problemen · 7 backlog · 7 risico · 109 checks OK_

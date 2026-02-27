@@ -425,10 +425,16 @@ def check_adr_status():
                      "vite-plugin-pwa" in (PORTAAL_ROOT / "vite.config.js").read_text(encoding="utf-8", errors="ignore") \
                      if (PORTAAL_ROOT / "vite.config.js").exists() else False
 
+    app_archived = (APP_ROOT / ".archived").exists()
+
     if not portaal_exists:
         pass  # Niet van toepassing
-    elif not app_exists:
-        ok()  # App verwijderd — merge klaar
+    elif (not app_exists or app_archived) and tabbar_exists and pwa_configured:
+        ok()  # Volledig afgerond
+    elif (not app_exists or app_archived):
+        ok()  # App gearchiveerd — merge klaar
+    elif tabbar_exists and pwa_configured:
+        todo("ADR-002: Merge bijna klaar — tab-navigatie ✅, PWA ✅, archiveer nog gerustthuis-app op GitHub")
     elif tabbar_exists and not pwa_configured:
         todo("ADR-002: Merge in uitvoering — tab-navigatie ✅, PWA configuratie (vite-plugin-pwa) nog open")
     elif not tabbar_exists:
