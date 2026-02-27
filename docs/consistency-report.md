@@ -1,6 +1,6 @@
 # GerustThuis Project Health Report
 
-_Automatisch gegenereerd op 2026-02-27 16:09_
+_Automatisch gegenereerd op 2026-02-27 16:24_
 
 > Dit rapport is de centrale actielijst voor het project.
 > **❌ Problemen** moeten direct opgelost worden.
@@ -8,11 +8,6 @@ _Automatisch gegenereerd op 2026-02-27 16:09_
 > **⚠️ Risico** zijn zaken die aandacht verdienen.
 
 ---
-
-## ❌ Problemen (2) — moet opgelost worden
-
-- CORS staat op `'*'` in `_shared/cors.ts` — zet op specifieke domeinen (gerustthuis.nl, localhost)
-- `hue-token-exchange/index.ts` regel 32: console.log met (deel van) credential — verwijder voor productie
 
 ## 📋 Niet gebouwd (7) — backlog items
 
@@ -61,4 +56,4 @@ _Externe code review (feb 2026). Verwijder een item als het is opgelost._
 
 ---
 
-_Totaal: 2 problemen · 7 backlog · 7 risico · 109 checks OK_
+_Totaal: 0 problemen · 7 backlog · 7 risico · 111 checks OK_
