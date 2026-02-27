@@ -2,60 +2,197 @@
 
 Actuele database structuur in Supabase (gerustthuis-supabase).
 
-**Laatst bijgewerkt:** 2026-02-15
+**Laatst bijgewerkt:** 2026-02-27
 
 ---
 
 ## Tabellen Overzicht
 
+### Sensordata & Activiteit (`integrations` + `activity` schema)
+
+```mermaid
+erDiagram
+    hue_config ||--o{ hue_devices : "config_id"
+    hue_config ||--o{ activity_events : "config_id"
+    hue_config ||--o{ room_activity : "config_id"
+    hue_config ||--o{ room_activity_hourly : "config_id"
+    hue_config ||--o{ daily_activity_stats : "config_id"
+    hue_devices ||--o{ activity_events : "device_id"
+    physical_devices ||--o{ hue_devices : "physical_device_id"
+
+    hue_config {
+        uuid id PK
+        varchar user_email
+        text access_token
+        text refresh_token
+        timestamptz token_expires_at
+        varchar bridge_username
+        varchar status
+        timestamptz last_sync_at
+    }
+
+    hue_devices {
+        uuid id PK
+        uuid config_id FK
+        varchar hue_id
+        varchar device_type
+        varchar name
+        varchar room_name
+        jsonb last_state
+        uuid physical_device_id FK
+    }
+
+    activity_events {
+        uuid id PK
+        uuid config_id FK
+        uuid device_id FK
+        varchar device_type
+        varchar room_name
+        boolean is_on
+        timestamptz recorded_at
+    }
+
+    room_activity {
+        uuid id PK
+        uuid config_id FK
+        varchar room_name
+        timestamptz activity_window
+        text[] trigger_types
+        integer trigger_count
+    }
+
+    room_activity_hourly {
+        uuid id PK
+        uuid config_id FK
+        text room_name
+        timestamptz hour
+        integer motion_events
+        integer door_events
+        integer total_events
+    }
+
+    daily_activity_stats {
+        uuid id PK
+        uuid config_id FK
+        date date
+        text first_activity
+        text last_activity
+        integer total_events
+        integer[] events_per_hour
+        integer active_hours
+        integer rooms_active
+        integer longest_gap_minutes
+        integer night_events
+        integer motion_events
+        integer door_events
+    }
+
+    physical_devices {
+        uuid id PK
+        uuid config_id FK
+        varchar mac_prefix
+        varchar name
+        varchar room_name
+        integer battery_level
+    }
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   hue_config    │────<│   hue_devices   │
-│  (OAuth tokens) │     │ (lampen/sensors)│
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         │              ┌────────┴────────┐
-         │              │                 │
-         │     ┌────────▼────────┐  ┌─────▼─────────────┐
-         │     │ activity_events │  │ physical_devices  │
-         │     │  (alle events)  │  │ (sensor grouping) │
-         │     └────────┬────────┘  └───────────────────┘
-         │              │
-         │     ┌────────┴────────────────────┐
-         │     │                             │
-         │     ▼                             ▼
-         │  ┌────────────────┐    ┌─────────────────────┐
-         │  │ room_activity  │    │ daily_activity_stats│
-         │  │(5-min aggregat)│    │   (dag statistiek)  │
-         │  └───────┬────────┘    └─────────────────────┘
-         │          │
-         │  ┌───────▼────────────┐
-         └─>│room_activity_hourly│
-            │     (table)        │
-            └────────────────────┘
 
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   households    │────<│household_members│     │  user_profiles  │
-│(huishouden naam)│     │(admin/viewer/   │     │  (auth.users)   │
-└────────┬────────┘     │   installer)    │     └─────────────────┘
-         │              └─────────────────┘
-         │
-    ┌────▼────────────┐
-    │    residents     │
-    │ (bewoner profiel)│
-    │ naam, relatie,   │
-    │ foto             │
-    └─────────────────┘
+### Gebruikers, Huishoudens & Bewoners (`public` schema)
 
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│    projects     │────<│ project_phases  │────<│ phase_criteria  │
-│  (projectplan)  │     │   (fasen)       │     │ phase_purchases │
-└────────┬────────┘     └─────────────────┘     │ phase_decisions │
-         │                                      └─────────────────┘
-    ┌────▼────────────┐     ┌─────────────────────┐
-    │ project_tickets │────<│ ticket_dependencies │
-    │   (taken)       │     └─────────────────────┘
-    └─────────────────┘
+```mermaid
+erDiagram
+    households ||--o{ household_members : "household_id"
+    households ||--o{ residents : "household_id"
+    households }o--|| hue_config : "config_id"
+    user_profiles ||--o{ household_members : "user_id"
+    households ||--o{ family_board_messages : "household_id"
+    households ||--o{ notifications : "household_id"
+
+    households {
+        uuid id PK
+        text name
+        uuid config_id FK
+    }
+
+    household_members {
+        uuid id PK
+        uuid household_id FK
+        uuid user_id FK
+        text role
+    }
+
+    user_profiles {
+        uuid id PK
+        text display_name
+        uuid active_household_id FK
+        boolean setup_completed
+    }
+
+    residents {
+        uuid id PK
+        uuid household_id FK
+        varchar naam
+        varchar relationship
+        text photo_path
+        date date_of_birth
+    }
+
+    family_board_messages {
+        uuid id PK
+        uuid household_id FK
+        uuid user_id FK
+        text message
+        timestamptz created_at
+    }
+
+    notifications {
+        uuid id PK
+        uuid household_id FK
+        text type
+        text title
+        text description
+        boolean is_read
+        timestamptz created_at
+    }
+```
+
+### Projectplan (`public` schema — Admin portaal)
+
+```mermaid
+erDiagram
+    projects ||--o{ project_phases : "project_id"
+    projects ||--o{ project_tickets : "project_id"
+    project_phases ||--o{ phase_criteria : "phase_id"
+    project_phases ||--o{ phase_purchases : "phase_id"
+    project_phases ||--o{ phase_decisions : "phase_id"
+    project_phases ||--o{ project_tickets : "phase_id"
+    project_tickets ||--o{ ticket_dependencies : "ticket_id"
+    project_tickets ||--o{ ticket_dependencies : "depends_on_id"
+
+    projects {
+        uuid id PK
+        uuid user_id FK
+        text name
+        numeric total_budget
+    }
+
+    project_phases {
+        uuid id PK
+        uuid project_id FK
+        integer phase_number
+        text name
+        text status
+    }
+
+    project_tickets {
+        uuid id PK
+        uuid project_id FK
+        uuid phase_id FK
+        text ticket_number
+        text title
+        text status
+        text priority
+    }
 ```
 
 ---
@@ -401,7 +538,7 @@ Supabase Edge Functions:
    a. Refresh OAuth token indien nodig
    b. Fetch lights, groups, sensors (v1 API)
    c. Fetch contact sensors (v2 API)
-   d. Vergelijk current_state met last_state per device
+   d. Vergelijk nieuwe state met last_state per device
    e. Bij change → INSERT in activity_events
    f. Aggregeer naar room_activity per 5-min window
 ```
@@ -570,29 +707,29 @@ CREATE POLICY "Users view own activity_events" ON activity_events
 
 ## Data Flow
 
-```
-Hue Bridge (v1 + v2 API)
-    │
-    ▼
-hue-sync-state (elke 5 min)
-    │
-    ├──► hue_devices.current_state (UPDATE - altijd)
-    │
-    ├──► hue_devices.last_state (UPDATE - alleen bij change)
-    │
-    ├──► activity_events (INSERT bij state change)
-    │         │
-    │         ▼
-    └──► room_activity (UPSERT per 5-min window)
-                  │
-                  ▼
-         room_activity_hourly (TABLE - uurlijkse aggregatie)
-                  │
-                  ▼
-         Dashboard heatmap (7 dagen)
+```mermaid
+flowchart TD
+    HUE[Hue Bridge\nv1 + v2 API]
+    SYNC[hue-sync-state\nelke 5 min]
+    DEV[hue_devices.last_state\nUPDATE bij state change]
+    EVT[activity_events\nINSERT bij state change]
+    RA[room_activity\nUPSERT per 5-min window]
+    RAH[room_activity_hourly\nTABLE · pg_cron elk uur]
+    DAS[daily_activity_stats\npg_cron elk uur]
+    DASH[Dashboard heatmap\n7 dagen]
+    PATR[Patronen + Analyse]
+
+    HUE --> SYNC
+    SYNC --> DEV
+    SYNC --> EVT
+    SYNC --> RA
+    RA -->|aggregate_hourly_activity| RAH
+    RAH --> DASH
+    EVT -->|calculate_daily_activity_stats| DAS
+    DAS --> PATR
 ```
 
-**Aggregatie:** room_activity wordt realtime bijgewerkt door hue-sync-state. room_activity_hourly wordt elk uur gevuld door pg_cron via aggregate_hourly_activity().
+**Aggregatie:** `room_activity` wordt realtime bijgewerkt door `hue-sync-state`. `room_activity_hourly` en `daily_activity_stats` worden elk uur gevuld door pg_cron.
 
 ---
 
@@ -665,7 +802,7 @@ GerustThuis kent drie personages:
 | **Mantelzorger** | De persoon die meekijkt via portaal of app | Account via Supabase Auth, rol `admin` of `viewer` |
 | **Installateur** | De persoon die sensoren plaatst en configureert | Account via Supabase Auth, rol `installer` |
 
-Zie [USER_STORIES.md](USER_STORIES.md) voor user stories per personage.
+Zie [USER_STORIES.md](../product/user-stories.md) voor user stories per personage.
 
 ---
 
@@ -704,6 +841,7 @@ Zie [USER_STORIES.md](USER_STORIES.md) voor user stories per personage.
 | id | UUID | PK = auth.users.id |
 | display_name | TEXT | Weergavenaam |
 | active_household_id | UUID | Actief huishouden |
+| setup_completed | BOOLEAN | Onboarding afgerond (migration 031) |
 | created_at | TIMESTAMPTZ | Aangemaakt |
 
 ---
@@ -711,10 +849,11 @@ Zie [USER_STORIES.md](USER_STORIES.md) voor user stories per personage.
 ### 8. `residents` - Bewonersprofielen per huishouden
 
 ```sql
+-- Migration 035: first_name hernoemd naar naam
 CREATE TABLE residents (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     household_id    UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
-    first_name      VARCHAR(100) NOT NULL,
+    naam            VARCHAR(100) NOT NULL,
     relationship    VARCHAR(50) NOT NULL,
     photo_path      TEXT,
     date_of_birth   DATE,
@@ -729,7 +868,7 @@ CREATE INDEX idx_residents_household ON residents(household_id);
 **Kolom beschrijvingen:**
 | Kolom | Beschrijving |
 |-------|--------------|
-| `first_name` | Voornaam van de bewoner (bijv. "Annie") |
+| `naam` | Vrije naam voor de bewoner (bijv. "Annie", "Oma", "de Boer") — geen voornaam vereist |
 | `relationship` | Relatie tot de mantelzorger: `mama`, `papa`, `opa`, `oma`, `partner`, `broer`, `zus`, `vriend`, `buurman`, `anders` |
 | `photo_path` | Relatief pad in Supabase Storage bucket `resident-photos` (bijv. `{household_id}/{resident_id}.jpg`) |
 | `date_of_birth` | Optioneel, voor leeftijdscontext |
@@ -869,6 +1008,14 @@ SQL migraties in `gerustthuis-supabase/supabase/migrations/`:
 17. `020_expand_daily_stats.sql` - Voegt motion_events en door_events kolommen toe + update calculate functie
 18. `021_residents_and_roles.sql` - Bewonersprofielen (residents tabel), installer rol, RLS policies, Storage bucket
 19. `022_project_tables.sql` - Genormaliseerde projectplan tabellen: projects, project_phases, phase_criteria, phase_purchases, phase_decisions, project_tickets, ticket_dependencies + RLS policies
+20. `023` t/m `027` - *(details nog te documenteren)*
+21. `028_schema_reorganization.sql` - `hue_config` + `hue_devices` + `physical_devices` verhuisd naar `integrations` schema; `activity_events`, `room_activity`, `room_activity_hourly`, `daily_activity_stats` naar `activity` schema
+22. `029` t/m `030` - *(details nog te documenteren)*
+23. `031_setup_completed.sql` - `setup_completed` kolom op `user_profiles` (bepaalt of onboarding afgerond is)
+24. `032_family_board_messages.sql` - `family_board_messages` tabel + RLS + Realtime (Familie tab)
+25. `033_notifications.sql` - `notifications` tabel + RLS + Realtime (Meldingen tab)
+26. `034_user_settings.sql` - `user_settings` tabel met notificatie-voorkeuren (dagelijks_samenvatting, kritieke_alerts, nachtelijke_activiteit)
+27. `035_residents_rename.sql` - `residents.first_name` hernoemd naar `naam`
 
 ---
 

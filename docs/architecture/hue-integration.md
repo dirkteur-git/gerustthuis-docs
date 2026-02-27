@@ -25,35 +25,20 @@ We gebruiken **twee** Hue API versies:
 
 ### OAuth 2.0 Flow
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Browser   │     │  Supabase   │     │   Hue API   │
-│  (Portaal)  │     │  Edge Fn    │     │             │
-└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
-       │                   │                   │
-       │ 1. Redirect naar Hue login            │
-       │──────────────────────────────────────>│
-       │                   │                   │
-       │ 2. User logt in, geeft toestemming    │
-       │<──────────────────────────────────────│
-       │   (callback met ?code=xxx)            │
-       │                   │                   │
-       │ 3. Stuur code     │                   │
-       │──────────────────>│                   │
-       │                   │ 4. Token exchange │
-       │                   │──────────────────>│
-       │                   │                   │
-       │                   │ 5. access_token   │
-       │                   │<──────────────────│
-       │                   │                   │
-       │                   │ 6. Link bridge    │
-       │                   │──────────────────>│
-       │                   │                   │
-       │                   │ 7. bridge_username│
-       │                   │<──────────────────│
-       │                   │                   │
-       │ 8. Success        │                   │
-       │<──────────────────│                   │
+```mermaid
+sequenceDiagram
+    participant B as Browser (Portaal/App)
+    participant E as Supabase Edge Fn
+    participant H as Hue API
+
+    B->>H: 1. Redirect naar Hue login (OAuth authorize)
+    H-->>B: 2. Callback met ?code=xxx na toestemming
+    B->>E: 3. POST code + user_email + user_id
+    E->>H: 4. Token exchange (code → access_token)
+    H-->>E: 5. access_token + refresh_token
+    E->>H: 6. Bridge linking (link button + create username)
+    H-->>E: 7. bridge_username
+    E-->>B: 8. Success (config_id, bridge_username)
 ```
 
 ### Stap 1: Authorization URL (Frontend)
@@ -146,20 +131,18 @@ async function refreshToken(refreshToken: string) {
 
 **Token Refresh Failure Flow:**
 
-```
-Token expired?
-    │
-    ├── YES → Attempt refresh
-    │         │
-    │         ├── Success → Update tokens in DB, continue polling
-    │         │
-    │         └── Failure →
-    │               1. Set hue_config.status = 'error'
-    │               2. Set hue_config.last_error = error message
-    │               3. Skip this config in current poll cycle
-    │               4. Next poll cycle: retry refresh
-    │
-    └── NO → Continue with current token
+```mermaid
+flowchart TD
+    CHECK{Token verlopen?}
+    REFRESH[Refresh token aanvragen]
+    OK[Tokens opslaan in DB\nDoorgaan met polling]
+    ERR[status = error\nlast_error = bericht\nConfig overslaan]
+    CONT[Doorgaan met huidig token]
+
+    CHECK -->|Ja| REFRESH
+    CHECK -->|Nee| CONT
+    REFRESH -->|Succes| OK
+    REFRESH -->|Mislukt| ERR
 ```
 
 **Status Transitions:**

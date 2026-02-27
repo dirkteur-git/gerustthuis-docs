@@ -61,14 +61,14 @@ Feature status en geplande verbeteringen.
 - React + Vite + Tailwind PWA voor mantelzorgers (vervangt React Native)
 - 4 tabs: Overzicht / Familie / Meldingen / Instellingen
 - Privacy-first: geen exacte tijdstippen, alleen dagdelen
-- Zie [APP_DESIGN.md](APP_DESIGN.md) voor volledig design
+- Zie [APP_DESIGN.md](../design/app-design.md) voor volledig design
 
 ### Alert Systeem ✓ (in PWA)
 - Meldingenfeed met dagsamenvattingen, ochtend- en nachtmeldingen
 - Kritieke meldingen (geen activiteit), nachtelijke onrust
 - Dagelijkse samenvatting (elke avond)
 - Quiet hours configuratie via Instellingen tab
-- Zie [APP_DESIGN.md §6](APP_DESIGN.md) voor meldingstypen en [docs/overview/alerts.md](docs/overview/alerts.md)
+- Zie [APP_DESIGN.md §6](../design/app-design.md) voor meldingstypen en [docs/overview/alerts.md](../architecture/alerts.md)
 
 ---
 
@@ -106,11 +106,11 @@ Feature status en geplande verbeteringen.
 
 ### Website Nuxt (feb 2026)
 - Nieuwe marketing website live: Nuxt 3 SSG (`gerustthuis-website-nuxt`)
-- Prijsmodel: Gratis / Plus (€60/jr) / Compleet Pakket (€200 eenmalig)
-  - Compleet Pakket: eigen hardware + installatie door ons + eerste jaar Plus
-  - Installatie alleen met eigen hardware — niet op Hue/IKEA van klant
+- Prijsmodel: Gratis (max 3 sensoren) / Plus (€5/mnd) / Compleet Pakket (€125 netto na terugkoop)
+  - Compleet Pakket: GerustThuis hardware (€160) + installatie (€45) + jaar 1 Plus = €205 bruto, terugkoopgarantie 50% hardware (€80) → €125 netto
+  - Installatie ALLEEN via Compleet Pakket (wij sourcen hardware) — géén standalone installatie op eigen hardware
+- Founding deal: eerste 500 gebruikers betalen altijd de helft van de actuele Plus prijs (nu €2,50/mnd, lifelong)
 - Friendship deal: 1 maand gratis per doorverwezen aanmelding
-- Lanceringsprijs: eerste jaar 20% korting op Plus (€48 i.p.v. €60)
 - Privacy/beveiliging pagina toegevoegd (AVG-compliant)
 - Homepage vereenvoudigd: focus op emotionele story, hardware-secties verplaatst
 - Stappenplan: Koppel sensoren → Systeem leert → Jij voelt je gerust

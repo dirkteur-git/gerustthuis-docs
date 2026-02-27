@@ -413,6 +413,7 @@ onMounted(async () => {
 | `Dashboard.vue` | 7-dagen heatmap, status banner, recente activiteit, offline sensoren, auto-refresh (5 min) |
 | `Patronen.vue` | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
 | `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur (developer view) |
+| `Trends.vue` | Website analytics via GA4: bezoekers per dag, topgepagina's, traffic bronnen |
 | `Woning.vue` | Kamers overzicht, devices per kamer, activiteit per kamer |
 | `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers |
 | `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
@@ -474,6 +475,7 @@ VITE_HUE_CLIENT_ID=xxx
 | `/` | Dashboard.vue | Ja |
 | `/patronen` | Patronen.vue | Ja |
 | `/analyse` | Analyse.vue | Ja |
+| `/trends` | Trends.vue | Ja |
 | `/woning` | Woning.vue | Ja |
 | `/instellingen` | Instellingen.vue | Ja |
 | `/hue` | HueConnect.vue | Ja |

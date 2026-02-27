@@ -20,7 +20,7 @@ Anomaly detection draait in de browser en wordt getoond op drie plekken:
 | Patronen | Vergelijking vandaag vs 14-dagen baseline | 5 metrics met severity badges (low/medium/high) |
 | Analyse | Z-score per feature | Anomaly score 0-1, breakdown per feature |
 
-Zie [ANOMALY_DETECTION.md](../../ANOMALY_DETECTION.md) voor details over het algoritme.
+Zie [ANOMALY_DETECTION.md](anomaly-detection.md) voor details over het algoritme.
 
 ### Wat nog ontbreekt
 

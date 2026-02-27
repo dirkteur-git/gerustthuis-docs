@@ -27,7 +27,7 @@ anomaly_score >= 0.6 → status = 'kritiek',  label = 'Actie vereist'
 ```sql
 SELECT anomaly_score
 FROM daily_activity_stats
-WHERE config_id = :configId AND stat_date = CURRENT_DATE
+WHERE config_id = :configId AND date = CURRENT_DATE
 LIMIT 1
 ```
 
@@ -65,20 +65,20 @@ LIMIT 1
 **Queries:**
 ```sql
 -- Ochtendactiviteit (top zone 06:00–12:00)
-SELECT zone_id, COUNT(*) as events
+SELECT room_name, COUNT(*) as events
 FROM activity_events
 WHERE config_id = :configId
   AND created_at::date = CURRENT_DATE
   AND EXTRACT(hour FROM created_at) BETWEEN 6 AND 11
-GROUP BY zone_id ORDER BY events DESC LIMIT 1
+GROUP BY room_name ORDER BY events DESC LIMIT 1
 
 -- Middag (top 2 zones 12:00–18:00)
-SELECT zone_id, COUNT(*) as events
+SELECT room_name, COUNT(*) as events
 FROM activity_events
 WHERE config_id = :configId
   AND created_at::date = CURRENT_DATE
   AND EXTRACT(hour FROM created_at) BETWEEN 12 AND 17
-GROUP BY zone_id ORDER BY events DESC LIMIT 2
+GROUP BY room_name ORDER BY events DESC LIMIT 2
 ```
 
 ---
@@ -96,13 +96,13 @@ GROUP BY zone_id ORDER BY events DESC LIMIT 2
 -- Vandaag
 SELECT active_hours, rooms_active
 FROM daily_activity_stats
-WHERE config_id = :configId AND stat_date = CURRENT_DATE
+WHERE config_id = :configId AND date = CURRENT_DATE
 
 -- Weekgemiddelde
 SELECT ROUND(AVG(active_hours), 1) as week_avg
 FROM daily_activity_stats
 WHERE config_id = :configId
-  AND stat_date >= CURRENT_DATE - INTERVAL '7 days'
+  AND date >= CURRENT_DATE - INTERVAL '7 days'
 ```
 
 ---
@@ -117,11 +117,11 @@ WHERE config_id = :configId
 
 **Query:**
 ```sql
-SELECT stat_date, anomaly_score
+SELECT date, anomaly_score
 FROM daily_activity_stats
 WHERE config_id = :configId
-  AND stat_date >= CURRENT_DATE - INTERVAL '6 days'
-ORDER BY stat_date ASC
+  AND date >= CURRENT_DATE - INTERVAL '6 days'
+ORDER BY date ASC
 ```
 
 **Algoritme:** zelfde als StatusBanner (anomaly_score → goed/aandacht/kritiek).
@@ -162,13 +162,13 @@ Ontbrekende dagen → `'geen-data'`.
 
 ## Zones → kamernamen
 
-De `activity_events` en `room_activity_hourly` tabellen gebruiken `zone_id` (UUID).
+De `activity_events` en `room_activity_hourly` tabellen gebruiken `room_name` (UUID).
 Voor leesbare namen in bullets: join met `hue_devices`:
 
 ```sql
 SELECT hd.name as zone_name, COUNT(ae.id) as events
 FROM activity_events ae
-JOIN hue_devices hd ON hd.id = ae.zone_id
+JOIN hue_devices hd ON hd.id = ae.room_name
 WHERE ae.config_id = :configId
   AND ae.created_at::date = CURRENT_DATE
 GROUP BY hd.name

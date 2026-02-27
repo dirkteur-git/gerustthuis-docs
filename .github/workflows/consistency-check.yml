@@ -1,0 +1,54 @@
+name: Consistency Check
+
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * *'   # Elke dag om 06:00 UTC
+  workflow_dispatch:        # Handmatig starten via GitHub UI
+
+jobs:
+  check:
+    name: Check docs consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout gerustthuis-docs
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Haal ook de supabase repo op (voor migraties)
+      - name: Checkout gerustthuis-supabase
+        uses: actions/checkout@v4
+        with:
+          repository: dirkteur-git/gerustthuis-supabase
+          path: ../gerustthuis-supabase
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Haal ook de portaal repo op (voor router)
+      - name: Checkout gerustthuis-portaal
+        uses: actions/checkout@v4
+        with:
+          repository: dirkteur-git/gerustthuis-portaal
+          path: ../gerustthuis-portaal
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run consistency checker
+        id: checker
+        run: python3 scripts/check_consistency.py
+        continue-on-error: true   # Schrijf rapport ook bij fouten
+
+      - name: Commit updated report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/consistency-report.md
+          git diff --staged --quiet || git commit -m "chore: update consistency report [skip ci]"
+          git push
+
+      - name: Fail als er problemen zijn
+        if: steps.checker.outcome == 'failure'
+        run: |
+          echo "❌ Consistentie-problemen gevonden. Zie docs/consistency-report.md"
+          exit 1

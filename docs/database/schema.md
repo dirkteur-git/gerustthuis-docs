@@ -4,7 +4,7 @@
 
 GerustThuis gebruikt **Supabase PostgreSQL** als enige database. Alle tabellen zijn beveiligd met Row Level Security (RLS).
 
-Zie [DATABASE_DESIGN.md](../../DATABASE_DESIGN.md) voor het volledige schema met alle kolommen, indexen en queries.
+Zie [DATABASE_DESIGN.md](design.md) voor het volledige schema met alle kolommen, indexen en queries.
 
 ## Tabellen
 
