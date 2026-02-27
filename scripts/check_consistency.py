@@ -471,6 +471,130 @@ def check_routes():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# CATEGORIE 3: CODE KWALITEIT & SECURITY — externe audit bevindingen
+# ══════════════════════════════════════════════════════════════════════════════
+
+def check_security():
+    """Check 3a: Bekende security-problemen (bevestigd door externe review)"""
+    print("\n--- 3a. Security ---")
+
+    # CORS staat op '*' — alle domeinen toegestaan
+    cors_file = SUPABASE_ROOT / "supabase" / "functions" / "_shared" / "cors.ts"
+    if cors_file.exists():
+        try:
+            cors_content = cors_file.read_text(encoding="utf-8", errors="ignore")
+            if "'*'" in cors_content or '"*"' in cors_content:
+                problem("CORS staat op `'*'` in `_shared/cors.ts` — zet op specifieke domeinen (gerustthuis.nl, localhost)")
+            else:
+                ok()
+        except Exception:
+            pass
+    else:
+        risk("_shared/cors.ts niet gevonden")
+
+    # Debug-logging van credentials in hue-token-exchange
+    hue_fn = SUPABASE_ROOT / "supabase" / "functions" / "hue-token-exchange" / "index.ts"
+    if hue_fn.exists():
+        try:
+            lines = hue_fn.read_text(encoding="utf-8", errors="ignore").splitlines()
+            for i, line in enumerate(lines, 1):
+                if "console.log" in line and any(k in line for k in ["CLIENT_ID", "CLIENT_SECRET", "SECRET", "client_id", "client_secret"]):
+                    problem(f"`hue-token-exchange/index.ts` regel {i}: console.log met (deel van) credential — verwijder voor productie")
+                    break
+            else:
+                ok()
+        except Exception:
+            pass
+
+
+def check_tests():
+    """Check 3b: Testen aanwezig per repo?"""
+    print("\n--- 3b. Tests per repo ---")
+
+    ADMIN_ROOT = PROJECT_ROOT / "gerustthuis-admin_portal"
+    repos_to_check = [
+        ("gerustthuis-portaal", PORTAAL_ROOT),
+        ("gerustthuis-app",     APP_ROOT),
+        ("gerustthuis-admin",   ADMIN_ROOT),
+    ]
+
+    for name, root in repos_to_check:
+        if not root.exists():
+            continue
+        has_config = (
+            list(root.glob("vitest.config.*")) or
+            list(root.glob("jest.config.*")) or
+            list(root.glob("playwright.config.*"))
+        )
+        has_test_files = (
+            list(root.rglob("*.test.ts")) or
+            list(root.rglob("*.test.js")) or
+            list(root.rglob("*.spec.ts")) or
+            list(root.rglob("*.spec.js"))
+        )
+        # Exclude node_modules
+        has_test_files = [f for f in has_test_files if "node_modules" not in str(f)]
+
+        if has_config or has_test_files:
+            ok()
+        else:
+            todo(f"`{name}`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)")
+
+
+def check_code_quality():
+    """Check 3c: Code kwaliteitsmetrieken (bevestigd door externe review)"""
+    print("\n--- 3c. Code kwaliteit ---")
+
+    # TypeScript in portaal?
+    if PORTAAL_ROOT.exists():
+        tsconfig = PORTAAL_ROOT / "tsconfig.json"
+        if not tsconfig.exists():
+            risk("gerustthuis-portaal heeft geen TypeScript (tsconfig.json ontbreekt) — alle code is .js (verhoogt risico bij refactoring)")
+        else:
+            ok()
+
+    # Fat views (> 400 regels)
+    views_dir = PORTAAL_ROOT / "src" / "views"
+    if views_dir.exists():
+        for vue_file in views_dir.glob("*.vue"):
+            try:
+                line_count = vue_file.read_text(encoding="utf-8", errors="ignore").count("\n")
+                if line_count > 400:
+                    risk(f"portaal `{vue_file.name}`: {line_count} regels — te groot, splits in subcomponenten")
+                else:
+                    ok()
+            except Exception:
+                pass
+
+    # supabase.js — god-file?
+    supabase_svc = PORTAAL_ROOT / "src" / "services" / "supabase.js"
+    if supabase_svc.exists():
+        try:
+            line_count = supabase_svc.read_text(encoding="utf-8", errors="ignore").count("\n")
+            if line_count > 300:
+                risk(f"portaal `src/services/supabase.js`: {line_count} regels — mixt auth, data en domain-logica (god-file). Splits of migreer naar Pinia stores")
+            else:
+                ok()
+        except Exception:
+            pass
+
+    # Pinia check — portaal gebruikt reactive() ipv Pinia?
+    if PORTAAL_ROOT.exists():
+        has_pinia = (PORTAAL_ROOT / "node_modules" / "pinia").exists()
+        package_json = PORTAAL_ROOT / "package.json"
+        if package_json.exists():
+            try:
+                pkg = package_json.read_text(encoding="utf-8", errors="ignore")
+                has_pinia = "pinia" in pkg
+            except Exception:
+                pass
+        if not has_pinia:
+            risk("gerustthuis-portaal gebruikt geen Pinia — state management via kale `reactive()`. Migreer naar Pinia (consistent met Vue 3 best practices)")
+        else:
+            ok()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # RAPPORT SCHRIJVEN
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -511,6 +635,35 @@ def write_report():
     if not problems and not backlog and not risks:
         lines += ["## ✅ Alles in orde", "", "Geen openstaande issues gevonden.", ""]
 
+    # Vaste sectie — bevindingen die niet automatisch detecteerbaar zijn
+    lines += [
+        "---",
+        "",
+        "## 📎 Handmatige audit bevindingen",
+        "",
+        "_Externe code review (feb 2026). Verwijder een item als het is opgelost._",
+        "",
+        "### Security",
+        "- **Race condition rate limiting** (`waitlist-signup`): upsert + count check is niet-atomair. Vervang door `UPDATE ... RETURNING` of advisory lock in PostgreSQL.",
+        "",
+        "### Code kwaliteit",
+        "- **Input-validatie portaal**: formulieren valideren niet op lengte/formaat/inhoud. Website doet dit wél (Vee-validate + Zod). Voeg validatie toe aan portaal-formulieren.",
+        "- **Duplicatie portaal ↔ app**: z-score berekeningen, activiteitsdata-formattering en Hue-logica staan in beide repos. Geen shared packages. Wordt opgelost bij ADR-002 merge.",
+        "- **Pinia**: portaal gebruikt `reactive()` voor global state. Migreer naar Pinia voor betere DevTools-ondersteuning en consistency.",
+        "",
+        "### Scorekaart externe review (startpunt)",
+        "",
+        "| Repository | Score | Sterk | Aandacht |",
+        "|------------|-------|-------|---------|",
+        "| gerustthuis-docs | 8.5/10 | ADR-kwaliteit, volledigheid | Migraties 023-030 niet gedocumenteerd |",
+        "| gerustthuis-app | 7.5/10 | TypeScript strict, component-design | Geen tests, veel mock data |",
+        "| gerustthuis-website | 8/10 | Productie-klaar, SEO, validatie | Geen tests |",
+        "| gerustthuis-supabase | 6.5/10 | Migratie-kwaliteit, RLS | Security-lekken, CORS, race conditions |",
+        "| gerustthuis-portaal | 4.5/10 | Data-science logica (z-scores) | Geen TS, fat components, geen tests |",
+        "| gerustthuis-admin | 6/10 | Schone architectuur voor intern tool | Hardcoded email-allowlist, beperkt |",
+        "",
+    ]
+
     total = len(problems) + len(backlog) + len(risks)
     lines += [
         "---",
@@ -543,6 +696,11 @@ if __name__ == "__main__":
     check_user_story_features()
     check_adr_status()
     check_routes()
+
+    print("\n=== CATEGORIE 3: CODE KWALITEIT & SECURITY ===")
+    check_security()
+    check_tests()
+    check_code_quality()
 
     write_report()
 
