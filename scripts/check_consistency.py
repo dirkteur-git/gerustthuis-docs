@@ -167,10 +167,12 @@ def check_portaal_views():
     existing = {f.stem.lower() for f in views_dir.glob("*.vue")}
 
     # Views die gedocumenteerd zijn in portaal.md
+    # Analyse.vue is verplaatst naar gerustthuis-admin_portal
     DOCUMENTED_VIEWS = {
         "Dashboard":        "dashboard",
+        "Familie":          "familie",
+        "Meldingen":        "meldingen",
         "Patronen":         "patronen",
-        "Analyse":          "analyse",
         "Woning":           "woning",
         "Instellingen":     "instellingen",
         "HueConnect":       "hueconnect",
@@ -415,15 +417,22 @@ def check_adr_status():
     print("\n--- 2f. ADR actiestatus ---")
 
     # ADR-002: Portaal + app samenvoegen tot één Vue 3 PWA
-    # App repo bestaat nog → merge is nog niet uitgevoerd
+    # Check voortgang: TabBar aanwezig = merge in uitvoering
     app_exists = APP_ROOT.exists()
     portaal_exists = PORTAAL_ROOT.exists()
-    adr002_doc = REPO_ROOT / "docs" / "decisions" / "ADR-002-vue3-pwa-merge.md"
+    tabbar_exists = (PORTAAL_ROOT / "src" / "components" / "TabBar.vue").exists()
+    pwa_configured = (PORTAAL_ROOT / "vite.config.js").exists() and \
+                     "vite-plugin-pwa" in (PORTAAL_ROOT / "vite.config.js").read_text(encoding="utf-8", errors="ignore") \
+                     if (PORTAAL_ROOT / "vite.config.js").exists() else False
 
-    if app_exists and portaal_exists and adr002_doc.exists():
+    if not portaal_exists:
+        pass  # Niet van toepassing
+    elif not app_exists:
+        ok()  # App verwijderd — merge klaar
+    elif tabbar_exists and not pwa_configured:
+        todo("ADR-002: Merge in uitvoering — tab-navigatie ✅, PWA configuratie (vite-plugin-pwa) nog open")
+    elif not tabbar_exists:
         todo("ADR-002: gerustthuis-portaal en gerustthuis-app bestaan nog als aparte repos — samenvoegen naar één Vue 3 PWA staat open")
-    elif not app_exists and portaal_exists:
-        ok()
 
     # ADR-003: Tweede integratie na Hue (IKEA Dirigera) — is er al een ikea Edge Function?
     functions_dir = SUPABASE_ROOT / "supabase" / "functions"

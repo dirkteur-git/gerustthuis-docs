@@ -1,6 +1,6 @@
 # ADR-002: Één Vue 3 PWA — merge portaal en app
 
-**Status:** Geaccepteerd
+**Status:** In uitvoering (feb 2026)
 **Datum:** 2025
 **Auteur:** Dirk Bakker
 
@@ -91,3 +91,20 @@ Redenen:
 - `gerustthuis-app` React codebase gaat verloren — documenteer UX-beslissingen vóór archivering
 
 **Beslissing over repo:** `gerustthuis-portaal` wordt hernoemd naar `gerustthuis-frontend` of behoudt de naam. Naam verandering is optioneel — GitHub behoudt redirects.
+
+---
+
+## Voortgang (feb 2026)
+
+### Gedaan
+- `Analyse.vue` verplaatst naar `gerustthuis-admin_portal` (developer tool hoort niet bij mantelzorger-UI)
+- Sidebar vervangen door bottom `TabBar.vue` (4 tabs: Overzicht / Familie / Meldingen / Instellingen)
+- `Familie.vue` aangemaakt: bewoner banner + familieleden + familiegroep berichten (realtime via Supabase)
+- `Meldingen.vue` aangemaakt: notificaties per huishouden, gegroepeerd op datum, mark-as-read, realtime
+- `supabase.js` uitgebreid met: `getResident()`, `getFamilyBoardMessages()`, `postFamilyBoardMessage()`, `getNotifications()`, `markNotificationRead()`, `markAllNotificationsRead()`
+- Router bijgewerkt: `/familie` en `/meldingen` routes toegevoegd
+- Link "Sensoren & Kamers →" toegevoegd in Instellingen.vue
+
+### Nog te doen
+- PWA configuratie (`vite-plugin-pwa`, service worker, manifest)
+- `gerustthuis-app` archiveren op GitHub

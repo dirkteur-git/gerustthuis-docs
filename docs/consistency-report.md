@@ -1,6 +1,6 @@
 # GerustThuis Project Health Report
 
-_Automatisch gegenereerd op 2026-02-27 09:01_
+_Automatisch gegenereerd op 2026-02-27 15:59_
 
 > Dit rapport is de centrale actielijst voor het project.
 > **❌ Problemen** moeten direct opgelost worden.
@@ -19,7 +19,7 @@ _Automatisch gegenereerd op 2026-02-27 09:01_
 - US-3: Installer DB-rol bestaat (migration 021) maar er is GEEN installer-specifieke UI/onboarding flow
 - US-3b: AcceptInvitation.vue mist rol-bewustzijn voor meekijker vs mantelzorger onboarding
 - US-5.5/5.6: Rol upgrade/downgrade (viewer↔admin) nog niet geïmplementeerd in portaal/app UI
-- ADR-002: gerustthuis-portaal en gerustthuis-app bestaan nog als aparte repos — samenvoegen naar één Vue 3 PWA staat open
+- ADR-002: Merge in uitvoering — tab-navigatie ✅, PWA configuratie (vite-plugin-pwa) nog open
 - ADR-003: IKEA Dirigera is prioriteit 1 na Hue — ikea-sync-state Edge Function ontbreekt nog
 - `gerustthuis-portaal`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
 - `gerustthuis-app`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
@@ -28,11 +28,11 @@ _Automatisch gegenereerd op 2026-02-27 09:01_
 ## ⚠️ Risico (7) — controleer dit
 
 - gerustthuis-portaal heeft geen TypeScript (tsconfig.json ontbreekt) — alle code is .js (verhoogt risico bij refactoring)
-- portaal `Analyse.vue`: 945 regels — te groot, splits in subcomponenten
 - portaal `Dashboard.vue`: 865 regels — te groot, splits in subcomponenten
-- portaal `Instellingen.vue`: 653 regels — te groot, splits in subcomponenten
+- portaal `Familie.vue`: 561 regels — te groot, splits in subcomponenten
+- portaal `Instellingen.vue`: 665 regels — te groot, splits in subcomponenten
 - portaal `Patronen.vue`: 836 regels — te groot, splits in subcomponenten
-- portaal `src/services/supabase.js`: 521 regels — mixt auth, data en domain-logica (god-file). Splits of migreer naar Pinia stores
+- portaal `src/services/supabase.js`: 645 regels — mixt auth, data en domain-logica (god-file). Splits of migreer naar Pinia stores
 - gerustthuis-portaal gebruikt geen Pinia — state management via kale `reactive()`. Migreer naar Pinia (consistent met Vue 3 best practices)
 
 ---
@@ -62,4 +62,4 @@ _Externe code review (feb 2026). Verwijder een item als het is opgelost._
 
 ---
 
-_Totaal: 2 problemen · 8 backlog · 7 risico · 105 checks OK_
+_Totaal: 2 problemen · 8 backlog · 7 risico · 108 checks OK_

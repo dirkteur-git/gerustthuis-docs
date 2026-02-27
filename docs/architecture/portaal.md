@@ -63,7 +63,7 @@ npm run preview  # Test production build
 ```
 gerustthuis-portaal/
 ├── src/
-│   ├── App.vue                 # Root layout met sidebar
+│   ├── App.vue                 # Root layout met bottom TabBar (mobile-first)
 │   ├── main.js                 # App initialisatie
 │   ├── router.js               # Vue Router config
 │   ├── style.css               # Tailwind imports
@@ -72,14 +72,17 @@ gerustthuis-portaal/
 │   ├── composables/
 │   │   └── useDataQuality.js   # Gedeelde berekeningen
 │   ├── components/
-│   │   └── Logo.vue            # Gedeeld logo component
+│   │   ├── Logo.vue            # Gedeeld logo component
+│   │   └── TabBar.vue          # Bottom tab navigatie (4 tabs)
 │   └── views/
-│       ├── Dashboard.vue       # Heatmap overzicht
+│       ├── Dashboard.vue       # Heatmap overzicht (tab: Overzicht)
+│       ├── Familie.vue         # Bewoner, familieleden, familiegroep (tab: Familie)
+│       ├── Meldingen.vue       # Notifications per huishouden (tab: Meldingen)
+│       ├── Instellingen.vue    # Integraties beheer (tab: Instellingen)
 │       ├── Login.vue           # Login/registratie
-│       ├── Woning.vue          # Kamers en devices
-│       ├── Patronen.vue        # Patroonherkenning (dagritme, trends)
-│       ├── Analyse.vue         # Anomaly detection (Z-scores)
-│       ├── Instellingen.vue    # Integraties beheer
+│       ├── Woning.vue          # Kamers en devices (sub-pagina via Instellingen)
+│       ├── Patronen.vue        # Patroonherkenning (sub-pagina via Overzicht)
+│       ├── Trends.vue          # Website analytics (verborgen admin route)
 │       ├── HueConnect.vue      # Hue OAuth start
 │       ├── HueCallback.vue     # Hue OAuth callback
 │       └── AcceptInvitation.vue # Uitnodiging accepteren
@@ -408,15 +411,32 @@ onMounted(async () => {
 
 ## Geïmplementeerde Views
 
+### Tab Views (TabBar navigatie)
+
+| View | Tab | Functie |
+|------|-----|---------|
+| `Dashboard.vue` | Overzicht | 7-dagen heatmap, status banner, recente activiteit, offline sensoren, auto-refresh (5 min) |
+| `Familie.vue` | Familie | Bewoner banner, familieleden lijst, familiegroep berichten (realtime) |
+| `Meldingen.vue` | Meldingen | Notificaties gegroepeerd per datum, mark-as-read, realtime updates |
+| `Instellingen.vue` | Instellingen | Hue koppeling, huishouden beheer, gebruikers |
+
+### Sub-pagina's (geen tab, bereikbaar via links in tab-views)
+
+| View | Bereikbaar via | Functie |
+|------|----------------|---------|
+| `Patronen.vue` | Overzicht → "Bekijk volledige tijdlijn" | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
+| `Woning.vue` | Instellingen → "Sensoren & Kamers" | Kamers overzicht, devices per kamer |
+| `Trends.vue` | Verborgen route `/trends` | Website analytics via GA4 |
+
+### Overig
+
 | View | Functie |
 |------|---------|
-| `Dashboard.vue` | 7-dagen heatmap, status banner, recente activiteit, offline sensoren, auto-refresh (5 min) |
-| `Patronen.vue` | Dagritme analyse, vandaag vs normaal, weekpatroon, trends |
-| `Analyse.vue` | Z-score anomaly detection, score breakdown, events per uur (developer view) |
-| `Trends.vue` | Website analytics via GA4: bezoekers per dag, topgepagina's, traffic bronnen |
-| `Woning.vue` | Kamers overzicht, devices per kamer, activiteit per kamer |
-| `Instellingen.vue` | Hue koppeling, huishouden beheer, gebruikers |
 | `AcceptInvitation.vue` | Uitnodiging voor huishouden accepteren |
+| `HueConnect.vue` | Hue OAuth start |
+| `HueCallback.vue` | Hue OAuth callback |
+
+> **Let op:** `Analyse.vue` is verplaatst naar `gerustthuis-admin_portal` — dit is een developer/admin tool en hoort niet bij de mantelzorger-interface.
 
 ## Household Multi-tenancy
 
@@ -469,20 +489,19 @@ VITE_HUE_CLIENT_ID=xxx
 
 ## Routes
 
-| Route | View | Auth Required |
-|-------|------|---------------|
-| `/login` | Login.vue | Nee |
-| `/` | Dashboard.vue | Ja |
-| `/patronen` | Patronen.vue | Ja |
-| `/analyse` | Analyse.vue | Ja |
-| `/trends` | Trends.vue | Ja |
-| `/woning` | Woning.vue | Ja |
-| `/instellingen` | Instellingen.vue | Ja |
-| `/hue` | HueConnect.vue | Ja |
-| `/hue/callback` | HueCallback.vue | Ja |
-| `/uitnodiging/:token` | AcceptInvitation.vue | Nee |
-
-**Let op:** De `/analyse` route is beschikbaar maar niet zichtbaar in de sidebar navigatie (bedoeld als developer view).
+| Route | View | Auth Required | Zichtbaar in |
+|-------|------|---------------|-------------|
+| `/login` | Login.vue | Nee | - |
+| `/` | Dashboard.vue | Ja | Tab: Overzicht |
+| `/familie` | Familie.vue | Ja | Tab: Familie |
+| `/meldingen` | Meldingen.vue | Ja | Tab: Meldingen |
+| `/instellingen` | Instellingen.vue | Ja | Tab: Instellingen |
+| `/patronen` | Patronen.vue | Ja | Link in Overzicht |
+| `/woning` | Woning.vue | Ja | Link in Instellingen |
+| `/trends` | Trends.vue | Ja | Verborgen (admin) |
+| `/hue` | HueConnect.vue | Ja | Doorgestuurd vanuit Instellingen |
+| `/hue/callback` | HueCallback.vue | Ja | OAuth callback |
+| `/uitnodiging/:token` | AcceptInvitation.vue | Nee | E-maillink |
 
 **Route guard in router.js:**
 ```javascript
