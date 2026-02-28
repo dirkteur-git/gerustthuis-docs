@@ -1,6 +1,6 @@
 # GerustThuis Project Health Report
 
-_Automatisch gegenereerd op 2026-02-27 16:24_
+_Automatisch gegenereerd op 2026-02-28 04:14_
 
 > Dit rapport is de centrale actielijst voor het project.
 > **❌ Problemen** moeten direct opgelost worden.
@@ -19,14 +19,11 @@ _Automatisch gegenereerd op 2026-02-27 16:24_
 - `gerustthuis-app`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
 - `gerustthuis-admin`: geen tests aanwezig — voeg Vitest toe (unit tests voor z-scores, auth flows, edge cases)
 
-## ⚠️ Risico (7) — controleer dit
+## ⚠️ Risico (4) — controleer dit
 
 - gerustthuis-portaal heeft geen TypeScript (tsconfig.json ontbreekt) — alle code is .js (verhoogt risico bij refactoring)
-- portaal `Dashboard.vue`: 865 regels — te groot, splits in subcomponenten
 - portaal `Familie.vue`: 561 regels — te groot, splits in subcomponenten
 - portaal `Instellingen.vue`: 665 regels — te groot, splits in subcomponenten
-- portaal `Patronen.vue`: 836 regels — te groot, splits in subcomponenten
-- portaal `src/services/supabase.js`: 645 regels — mixt auth, data en domain-logica (god-file). Splits of migreer naar Pinia stores
 - gerustthuis-portaal gebruikt geen Pinia — state management via kale `reactive()`. Migreer naar Pinia (consistent met Vue 3 best practices)
 
 ---
@@ -56,4 +53,4 @@ _Externe code review (feb 2026). Verwijder een item als het is opgelost._
 
 ---
 
-_Totaal: 0 problemen · 7 backlog · 7 risico · 111 checks OK_
+_Totaal: 0 problemen · 7 backlog · 4 risico · 114 checks OK_

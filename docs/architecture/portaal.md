@@ -63,32 +63,45 @@ npm run preview  # Test production build
 ```
 gerustthuis-portaal/
 ├── src/
-│   ├── App.vue                 # Root layout met bottom TabBar (mobile-first)
-│   ├── main.js                 # App initialisatie
-│   ├── router.js               # Vue Router config
-│   ├── style.css               # Tailwind imports
+│   ├── App.vue                     # Root layout met bottom TabBar (mobile-first)
+│   ├── main.js                     # App initialisatie
+│   ├── router.js                   # Vue Router config
+│   ├── style.css                   # Tailwind imports
 │   ├── services/
-│   │   └── supabase.js         # Database client + helpers
+│   │   ├── supabase.js             # Barrel re-export (backwards compat)
+│   │   ├── client.js               # Supabase client + activityDb/integrationsDb
+│   │   ├── state.js                # Gedeelde userState reactive
+│   │   ├── auth.js                 # signIn, signOut, getCurrentUser, ...
+│   │   ├── household.js            # loadUserProfile, leden, uitnodigingen, ...
+│   │   ├── devices.js              # getHueConfig, sensoren, kamers, ...
+│   │   ├── residents.js            # getResident
+│   │   ├── messages.js             # family board + notificaties
+│   │   └── activity.js             # getRecentEvents
 │   ├── composables/
-│   │   └── useDataQuality.js   # Gedeelde berekeningen
+│   │   ├── useDataQuality.js       # Statistische berekeningen (z-scores, dagstart, ...)
+│   │   └── useDashboardData.js     # Data loading voor Dashboard (5 queries + refresh)
 │   ├── components/
-│   │   ├── Logo.vue            # Gedeeld logo component
-│   │   └── TabBar.vue          # Bottom tab navigatie (4 tabs)
+│   │   ├── Logo.vue                # Gedeeld logo component
+│   │   ├── TabBar.vue              # Bottom tab navigatie (4 tabs)
+│   │   ├── ActivityHeatmap.vue     # 7-dagen heatmap met hover tooltip
+│   │   ├── PatronenDagritme.vue    # Dagritme card + uurchart
+│   │   ├── PatronenVandaag.vue     # Vandaag vs normaal vergelijking
+│   │   └── PatronenTrends.vue      # 5 sparkline trend charts
 │   └── views/
-│       ├── Dashboard.vue       # Heatmap overzicht (tab: Overzicht)
-│       ├── Familie.vue         # Bewoner, familieleden, familiegroep (tab: Familie)
-│       ├── Meldingen.vue       # Notifications per huishouden (tab: Meldingen)
-│       ├── Instellingen.vue    # Integraties beheer (tab: Instellingen)
-│       ├── Login.vue           # Login/registratie
-│       ├── Woning.vue          # Kamers en devices (sub-pagina via Instellingen)
-│       ├── Patronen.vue        # Patroonherkenning (sub-pagina via Overzicht)
-│       ├── Trends.vue          # Website analytics (verborgen admin route)
-│       ├── HueConnect.vue      # Hue OAuth start
-│       ├── HueCallback.vue     # Hue OAuth callback
-│       └── AcceptInvitation.vue # Uitnodiging accepteren
+│       ├── Dashboard.vue           # Status banner + KPIs + heatmap (tab: Overzicht)
+│       ├── Familie.vue             # Bewoner, familieleden, familiegroep (tab: Familie)
+│       ├── Meldingen.vue           # Notifications per huishouden (tab: Meldingen)
+│       ├── Instellingen.vue        # Integraties beheer (tab: Instellingen)
+│       ├── Login.vue               # Login/registratie
+│       ├── Woning.vue              # Kamers en devices (sub-pagina via Instellingen)
+│       ├── Patronen.vue            # Patroonherkenning (sub-pagina via Overzicht)
+│       ├── Trends.vue              # Website analytics (verborgen admin route)
+│       ├── HueConnect.vue          # Hue OAuth start
+│       ├── HueCallback.vue         # Hue OAuth callback
+│       └── AcceptInvitation.vue    # Uitnodiging accepteren
 ├── public/
 ├── index.html
-├── vite.config.js
+├── vite.config.js                  # Incl. vite-plugin-pwa configuratie
 └── package.json
 ```
 
@@ -228,80 +241,53 @@ const maxZ = Math.max(...Object.values(zScores).map(Math.abs))
 
 ---
 
-## Supabase Service (supabase.js)
+## Services Architectuur
 
-Alle database interactie gaat via deze service.
+Alle database interactie gaat via domein-specifieke service bestanden. `supabase.js` is een barrel re-export — bestaande imports werken ongewijzigd.
 
-### Auth Functies
+### Domein-indeling
+
+| Bestand | Inhoud |
+|---------|--------|
+| `services/client.js` | Supabase client, `activityDb()`, `integrationsDb()` |
+| `services/state.js` | Gedeelde `userState` reactive (profiel, huishoudens, rol) |
+| `services/auth.js` | `signIn`, `signOut`, `getCurrentUser`, `onAuthStateChange` |
+| `services/household.js` | `loadUserProfile`, `switchHousehold`, `getHouseholdMembers`, uitnodigingen |
+| `services/devices.js` | `getHueConfig`, `saveHueConfig`, sensoren, kamers |
+| `services/residents.js` | `getResident` |
+| `services/messages.js` | `getFamilyBoardMessages`, `postFamilyBoardMessage`, notificaties |
+| `services/activity.js` | `getRecentEvents` |
+| `services/supabase.js` | Barrel re-export van alles bovenstaande |
+
+### Auth
 
 ```javascript
-// Huidige gebruiker ophalen
-export async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
-}
-
-// Inloggen
+export async function getCurrentUser()   // supabase.auth.getUser()
 export async function signIn(email, password)
-
-// Uitloggen
-export async function signOut()
-
-// Auth state listener
+export async function signOut()          // + reset userState
 export function onAuthStateChange(callback)
 ```
 
-### Hue Config Functies
+### Hue Config & Devices
 
 ```javascript
-// Hue koppeling voor huidige gebruiker
-export async function getHueConfig()
-// Query: Via householdConfigId of eerste accessible config
-
-// Opslaan/updaten
-export async function saveHueConfig(config)
-// Query: UPSERT INTO hue_config ON CONFLICT (user_email)
-```
-
-### Device Functies
-
-```javascript
-// Alle devices (optioneel gefilterd op type)
-export async function getDevices(type = null)
-// Query: SELECT * FROM hue_devices [WHERE device_type = type]
-
-// Alleen lampen
-export async function getLights()
-// Query: SELECT * FROM hue_devices WHERE device_type = 'light'
-
-// Alleen sensoren (niet-lampen)
-export async function getSensors()
-// Query: SELECT * FROM hue_devices WHERE device_type != 'light'
-
-// Physical devices met capabilities (geneste query)
-export async function getPhysicalDevices()
-// Query: SELECT *, capabilities:hue_devices(...) FROM physical_devices
-
-// Alle sensoren: physical devices + standalone
-export async function getAllSensors()
-// Combineert physical_devices en hue_devices zonder physical_device_id
-
-// Unieke kamers
+export async function getHueConfig()     // via householdConfigId of eerste accessible
+export async function saveHueConfig(config)  // UPSERT ON CONFLICT (user_email)
+export async function getDevices(type?)
+export async function getAllSensors()    // physical_devices + standalone
 export async function getRooms()
-// Query: SELECT DISTINCT room_name FROM hue_devices
-
-// Devices per kamer
 export async function getDevicesByRoom(roomName)
-// Query: physical_devices + hue_devices WHERE room_name = roomName
 ```
 
-### Event Functies
+### Events & Berichten
 
 ```javascript
-// Recente events met device info
 export async function getRecentEvents(limit = 50)
-// Query: SELECT *, hue_devices(name, device_type, room_name)
-//        FROM raw_events ORDER BY recorded_at DESC LIMIT 50
+export async function getFamilyBoardMessages(limit = 30)
+export async function postFamilyBoardMessage(message)
+export async function getNotifications(limit = 50)
+export async function markNotificationRead(id)
+export async function markAllNotificationsRead()
 ```
 
 ---
@@ -312,13 +298,16 @@ export async function getRecentEvents(limit = 50)
 
 | View | Tabellen | Queries |
 |------|----------|---------|
-| Dashboard | daily_activity_stats, room_activity_hourly, activity_events, hue_devices, physical_devices | 5 |
-| Patronen | daily_activity_stats, room_activity_hourly, activity_events | 3 |
-| Analyse | daily_activity_stats, room_activity_hourly | 2 |
-| Instellingen | hue_config | 1 |
+| Dashboard | daily_activity_stats, room_activity_hourly, activity_events, hue_devices | 5 |
+| Patronen | daily_activity_stats | 1 |
+| Familie | residents, family_board_messages, household_members, user_profiles | 4 |
+| Meldingen | notifications | 2 |
+| Instellingen | hue_config, households, household_members, household_invitations | 4 |
 | HueConnect | - | 0 |
 | HueCallback | - (via Edge Function) | 0 |
 | Login | - (Supabase Auth) | 0 |
+
+> **Analyse** is verplaatst naar `gerustthuis-admin_portal` — geen onderdeel van portaal.
 
 ### Per Tabel (Read)
 
@@ -383,29 +372,29 @@ const rooms = [...new Set(data.map(d => d.room_name))].sort()
 
 ## State Management
 
-**Geen centralized state** - elke view beheert eigen state via Vue refs:
+**Gedeelde user state** via `services/state.js`:
 
 ```javascript
-// Dashboard.vue
-const loading = ref(true)
-const rooms = ref([])
-const selectedRooms = ref([])
-const heatmapData = ref([])
-const sensorHealth = ref({ active: 0, total: 0 })
-const lastRefreshTime = ref(null)
-```
-
-**Data wordt één keer geladen bij mount:**
-```javascript
-onMounted(async () => {
-  await Promise.all([
-    loadRooms(),
-    loadSensorHealth(),
-    loadHeatmapData()
-  ])
-  loading.value = false
+export const userState = reactive({
+  profile: null,           // user_profiles record
+  households: [],          // alle huishoudens van de user
+  currentHousehold: null,  // actief huishouden (met config_id)
+  currentRole: null,       // 'admin' | 'viewer'
+  loaded: false,
 })
 ```
+
+**Dashboard data** via `composables/useDashboardData.js`:
+
+```javascript
+const { heatmapData, recentActivity, todayStats, averageStats,
+        historicalDays, offlineSensors, refreshAllData } = useDashboardData()
+
+// Dashboard roept aan in onMounted + setInterval(5 min):
+await refreshAllData()
+```
+
+**View-lokale state** — elke view beheert eigen `loading`, `hasConfig`, en UI-state via Vue `ref()`.
 
 ---
 
@@ -471,9 +460,9 @@ De Hue configuratie wordt opgehaald via:
 
 ## Bekende Beperkingen
 
-- Patronen en Analyse views hebben geen auto-refresh (alleen Dashboard heeft dit)
-- Geen real-time Supabase subscriptions (polling-based)
-- Geen handmatige refresh knop op Patronen/Analyse
+- Patronen heeft geen auto-refresh (alleen Dashboard heeft dit via setInterval 5 min)
+- Familie en Meldingen hebben realtime via Supabase channel; Dashboard is polling-based
+- Geen handmatige refresh knop op Patronen
 
 ---
 
